@@ -1,5 +1,4 @@
-#ifndef __INCLUDE_ElevatorListEntry_HPP__
-#define __INCLUDE_ElevatorListEntry_HPP__
+#pragma once
 #include <ostream>
 #include "ButtonList.hpp"
 #include "elev.h"
@@ -20,4 +19,4 @@ class ElevatorListEntry {
         bool checkFloor(int floor, elev_motor_direction_t direction);
         void resetElevator();//Tror egentlig vi ikke trenger denne, stop knappen kan ignoreres
 };
-#endif //#ifndef __ElevatorListEntry_HPP__
+

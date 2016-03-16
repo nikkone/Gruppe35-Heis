@@ -1,5 +1,4 @@
-#ifndef __INCLUDE_BUTTONLIST_HPP__
-#define __INCLUDE_BUTTONLIST_HPP__
+#pragma once
 #include <ctime>
 #include <ostream>
 class ButtonList {//Funker like bra med time_t som med bool, men false=0 og true = time_t
@@ -15,4 +14,4 @@ class ButtonList {//Funker like bra med time_t som med bool, men false=0 og true
         int getSize();
         friend std::ostream &operator<<( std::ostream &output, const ButtonList &ButtonList_ref );
 };
-#endif //#ifndef __INCLUDE_BUTTONLIST_HPP__
+
