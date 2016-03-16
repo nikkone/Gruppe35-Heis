@@ -21,13 +21,13 @@ std::ostream &operator<<( std::ostream &output, const ElevatorListEntry &Elevato
 void ElevatorListEntry::setFloor(int floor, int button_type) {
     switch(button_type){
         default:
-        case 0:
+        case 2:
             elevatorButtons_p->setButton(floor);
             break;
-        case 1:
+        case 0:
             upButtons_p->setButton(floor);
             break;
-        case -1:
+        case 1:
             downButtons_p->setButton(floor);
             break;
     }

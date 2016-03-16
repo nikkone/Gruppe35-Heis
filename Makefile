@@ -8,7 +8,7 @@ CFLAGS = -g -Wall -Wextra
 LDFLAGS = -lcomedi -lm
 
 # list of sources
-ELEVSRC = main.cpp ElevatorListEntry.cpp ButtonList.cpp
+ELEVSRC = elev.c io.c main.cpp ElevatorListEntry.cpp ButtonList.cpp fsm.cpp
 
 # program executable file name.
 TARGET = test
