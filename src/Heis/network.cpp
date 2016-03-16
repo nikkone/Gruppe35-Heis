@@ -147,7 +147,7 @@ void network::recieve(){
                         else
                         {
                             string client_ip = clientSock.first->remote_endpoint().address().to_string();
-                            string payload = client_ip + " " + *msg; // If JSON, msg only
+                            string payload = *msg;
                             InnboundMessages.push_back(payload);
                         }
                     }
