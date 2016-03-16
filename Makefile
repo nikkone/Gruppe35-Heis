@@ -1,17 +1,17 @@
 # Which compiler to use
-CC = gcc
+CC = g++
 
 # Compiler flags go here.
-CFLAGS = -std=c11 -g -Wall -Wextra
+CFLAGS = -g -Wall -Wextra
 
 # Linker flags go here.
 LDFLAGS = -lcomedi -lm
 
 # list of sources
-ELEVSRC = elev.c io.c main.c
+ELEVSRC = main.cpp ElevatorListEntry.cpp ButtonList.cpp
 
 # program executable file name.
-TARGET = elevator
+TARGET = test
 
 # top-level rule, to compile everything.
 all: $(TARGET)
