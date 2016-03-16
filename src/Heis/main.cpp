@@ -8,11 +8,38 @@
 //For sleep
 #include <unistd.h>
 
+#include <string.h>
+
 //#include <vector>
 #include <iostream>
 #include <map>
-int main() {
 
+char* findmyip() {
+        FILE * fp = popen("ifconfig", "r");
+        char* p, *e;
+        if (fp) {
+                p=NULL; size_t n;
+                while ((getline(&p, &n, fp) > 0) && p) {
+                   if (p = strstr(p, "inet ")) {
+                        p+=5;
+                        if (p = strchr(p, ':')) {
+                            ++p;
+                            if (e = strchr(p, ' ')) {
+                                *e='\0';
+                                pclose(fp);
+                                return p;
+                            }
+                        }
+                   }
+              }
+        }
+}
+
+int main() {
+    char* p = findmyip();
+    std::cout << p << std::endl;
+    network com(8001, p);
+    com.send("asdasdasdasdsfsdfsadf");
     //HW init
     if (!elev_init()) {
         std::exit(1);

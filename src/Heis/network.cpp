@@ -45,7 +45,7 @@ network::network(int port, string ip) : port(port), ip(ip)
 }
 
 void network::connectionHandler(){
-    cout << "Waiting for peers..." << endl;
+    //cout << "Waiting for peers..." << endl;
     tcp::acceptor acceptor(service, tcp::endpoint(tcp::v4(), port));
     while(true)
     {
