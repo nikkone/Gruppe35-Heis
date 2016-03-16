@@ -18,16 +18,16 @@ std::ostream &operator<<( std::ostream &output, const ElevatorListEntry &Elevato
     output << "Måletasje: " << ElevatorListEntry_ref.Destination << std::endl;
     return output;
 }
-void ElevatorListEntry::setFloor(int floor, int button_type) {
+void ElevatorListEntry::setFloor(int floor, elev_button_type_t button_type) {
     switch(button_type){
         default:
-        case 2:
+        case BUTTON_COMMAND:
             elevatorButtons_p->setButton(floor);
             break;
-        case 0:
+        case BUTTON_CALL_UP:
             upButtons_p->setButton(floor);
             break;
-        case 1:
+        case BUTTON_CALL_DOWN:
             downButtons_p->setButton(floor);
             break;
     }
@@ -37,17 +37,17 @@ void ElevatorListEntry::resetElevator(){
     delete elevatorButtons_p;
     elevatorButtons_p = new ButtonList(floors);
 }
-bool ElevatorListEntry::checkFloor(int floor, int direction) {
+bool ElevatorListEntry::checkFloor(int floor, elev_motor_direction_t direction) {
     switch(direction){
         default:
-        case 0:
+        case DIRN_STOP:
             break;
-        case 1:
+        case DIRN_UP:
             if(upButtons_p->getButton(floor)) {
                 return true;
             }
             break;
-        case -1:
+        case DIRN_DOWN:
             if(downButtons_p->getButton(floor)) {
                 return true;
             }
@@ -58,23 +58,23 @@ bool ElevatorListEntry::checkFloor(int floor, int direction) {
     }
     return false;
 }
-void ElevatorListEntry::resetFloor(int floor, int direction) {
+void ElevatorListEntry::resetFloor(int floor, elev_motor_direction_t direction) {
     switch(direction){
         default:
-        case 0:
+        case DIRN_STOP:
             break;
-        case 1:
+        case DIRN_UP:
             upButtons_p->resetButton(floor);
             break;
-        case -1:
+        case DIRN_DOWN:
             downButtons_p->resetButton(floor);
             break;
     }
     elevatorButtons_p->resetButton(floor);
 }
 /* TODO
-enum eller typedef for heisknapper
-enum eller typedef for heisrettning
+CHECK-enum eller typedef for heisknapper
+CHECK-enum eller typedef for heisrettning
 Fikse socket
 Fikse destructor
 Fikse/ferdigstille initialisering
