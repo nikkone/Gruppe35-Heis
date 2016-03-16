@@ -7,7 +7,7 @@ PROJECTS = $(patsubst $(SRC)/%, %, $(wildcard $(SRC)/*))
 
 CC = g++
 CFLAGS = -Wall -g -std=c++11
-LINKFLAGS = -Wall -g -lboost_system -lboost_thread -lcomedi -lm
+LINKFLAGS = -Wall -g -lboost_system -lboost_thread
 
 default:
 	@echo "Usage: make <PROJECT>|all"
@@ -24,7 +24,7 @@ clean:
 
 define PROJECT_template
 
-SOURCES-$1 = $$(wildcard $$(SRC)/$1/*.cpp) 
+SOURCES-$1 = $$(wildcard $$(SRC)/$1/*.cpp)
 OBJECTS-$1 = $$(patsubst $$(SRC)/$1/%.cpp,$$(OBJ)/$1/%.o,$$(SOURCES-$1))
 
 $1: $$(BIN)/$1
