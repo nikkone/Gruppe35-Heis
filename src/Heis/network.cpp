@@ -20,7 +20,7 @@ typedef boost::shared_ptr<string> string_ptr;
 typedef boost::shared_ptr< list< pair< socket_ptr, time_t > > > clientList_ptr;
 typedef boost::shared_ptr< queue<string> > messageQueue_ptr;
 
-const int bufSize = 1024; // Find max size of state data
+const int bufSize = 128; // Find max size of state data
 const double heartbeat_time = 3; //Acceptable waiting time?
 
 io_service service;

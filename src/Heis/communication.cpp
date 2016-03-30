@@ -33,10 +33,10 @@ char* communication::findmyip() {
     return p;
 }
 
-communication::communication() {
+communication::communication(ElevatorFSM &inputFsm) {
     ip = findmyip();
     com = new network(8001, ip);
-
+    fsm = &inputFsm;
 }
 
 std::string communication::toJSON(message_t type, std::string content){
@@ -53,18 +53,31 @@ std::string communication::toJSON(message_t type, std::string content){
 
 void communication::decodeJSON(std::string json){
     ptree pt;
+    //Strip empty space at end of json
+    std::size_t found = json.find_last_of("}\\");
+    json = json.substr(0,found) + "}";
+    /*found = json.find_first_of("{");
+    json = "{" + json.substr(0,found);
+*/
+    std::cout << "\""<< json <<"\""<<std::endl<< json.length() << std::endl;
     std::istringstream is(json);
+
     read_json(is, pt);
+
     std::string ip = pt.get<std::string>("ip");
     message_t type = (message_t)pt.get<int>("type");
     int floor = pt.get<int>("content");
     switch(type) {
         case COMMAND:
             std::cout << "COMMAND" << floor << std::endl;
+            fsm->buttonPressed(BUTTON_COMMAND, floor);
             break;
         case CALL_UP:
+            fsm->buttonPressed(BUTTON_CALL_UP, floor);
+            std::cout << floor << std::endl;
             break;
         case CALL_DOWN:
+            fsm->buttonPressed(BUTTON_CALL_DOWN, floor);
             break;
             /*
         case "STATE":
@@ -74,13 +87,14 @@ void communication::decodeJSON(std::string json){
         case "CURRENT_FLOOR":
             break;
             */
-    };
+    }
 }
 void communication::checkMailbox() {
     std::vector<std::string> mail = com->get_messages();
     for(std::vector<std::string>::iterator it = mail.begin(); it != mail.end(); it++) {
+        //std::cout << *it << std::endl;
         decodeJSON(*it);
-        std::cout << *it << std::endl;
+        
     }
 }
 void communication::sendMail(message_t type, std::string content) {

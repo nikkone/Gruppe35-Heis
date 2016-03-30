@@ -29,8 +29,9 @@ int main() {
     elevatorList[192168001002] = new ElevatorListEntry(4);
     //FSM init
     ElevatorFSM fsm = ElevatorFSM(elevatorList[192168001002]);
-    communication kom = communication();
+    communication kom = communication(fsm);
     while(true) {
+        kom.checkMailbox();
         { // Request button
             static int prev[N_FLOORS][N_BUTTONS];
             for(int f = 0; f < N_FLOORS; f++){
@@ -50,6 +51,7 @@ int main() {
             }
         }
     }
+    
     //std::string streng = kom.toJSON(COMMAND, "2");
     //std::cout << streng << std::endl;
 
