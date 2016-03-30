@@ -7,7 +7,7 @@ class ElevatorFSM {
     	ElevatorListEntry *localElevator;
     public:
     	ElevatorFSM(ElevatorListEntry* elevator);
-		void buttonPressed(int floor, elev_button_type_t buttonType);
+		void buttonPressed(elev_button_type_t buttonType, int floor);
 		void stopButtonPressed(void);
 		void sensorActivated(int floor);
 };

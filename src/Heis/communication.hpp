@@ -1,16 +1,20 @@
 #pragma once
 #include "network.hpp"
 #include <string.h>
+#include "elev.h"
 typedef enum msg_types {
-    BUTTON_COMMAND, BUTTON_CALL_UP, BUTTON_CALL_DOWN
+    COMMAND, CALL_UP, CALL_DOWN
 } message_t;
 class communication {
 	private:
 		network *com;
 		std::string ip;
+		void decodeJSON(std::string json);
+		std::string toJSON(message_t type, std::string content);
+		char* findmyip();
 	public:
 		communication();
-		char* findmyip();
-		std::string toJSON(message_t type, std::string content);
-		void decodeJSON(std::string json);
+		void checkMailbox();
+		void sendMail(message_t type, std::string content);
+		void sendMail(elev_button_type_t buttonType, int floor);
 };

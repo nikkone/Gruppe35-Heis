@@ -9,14 +9,52 @@
 //For sleep
 #include <unistd.h>
 
-#include <string.h>
+#include <string>
 
 //#include <vector>
 #include <iostream>
 #include <map>
 
+const int N_BUTTONS = 3;
 int main() {
+    //HW init
+    if (!elev_init()) {
+        std::exit(1);
+    }
+    elev_set_motor_direction(DIRN_UP);
+    while(elev_get_floor_sensor_signal() == -1);
+    elev_set_motor_direction(DIRN_STOP);
+    //Orderlist init
+    std::map<long, ElevatorListEntry(*)> elevatorList;
+    elevatorList[192168001002] = new ElevatorListEntry(4);
+    //FSM init
+    ElevatorFSM fsm = ElevatorFSM(elevatorList[192168001002]);
+    communication kom = communication();
+    while(true) {
+        { // Request button
+            static int prev[N_FLOORS][N_BUTTONS];
+            for(int f = 0; f < N_FLOORS; f++){
+                for(int b = 0; b < N_BUTTONS; b++){
 
+                    if(b==1 && f==0) continue;
+
+                    if(b==0 && f==N_FLOORS-1) continue;
+
+                    int v = elev_get_button_signal((elev_button_type_t)b/*BUTTON_COMMAND*/, f);
+                    if(v  &&  v != prev[f][b]){
+                        fsm.buttonPressed((elev_button_type_t)b, f);
+                        kom.sendMail((elev_button_type_t)b, f);
+                    }
+                    prev[f][b] = v;
+                }
+            }
+        }
+    }
+    //std::string streng = kom.toJSON(COMMAND, "2");
+    //std::cout << streng << std::endl;
+
+    //kom.fromJSON(streng);
+/*
     //HW init
     if (!elev_init()) {
         std::exit(1);
@@ -64,7 +102,7 @@ int main() {
         }
         usleep(100000);
     }
- /*   
+    
 //Mulighet #2
     std::map<long, ElevatorListEntry(*)> elevatorList;
     elevatorList[192168001002] = new ElevatorListEntry(4);

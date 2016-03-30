@@ -22,7 +22,7 @@ ElevatorFSM::ElevatorFSM(ElevatorListEntry *elevator) {
     }
 }
 
-void ElevatorFSM::buttonPressed(int floor, elev_button_type_t buttonType) {
+void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
 	localElevator->setFloor(floor, buttonType);
     elev_set_button_lamp(buttonType, floor, true);
 

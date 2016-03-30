@@ -1,8 +1,11 @@
 #include "communication.hpp"
+
 #include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <sstream>
+#include <ostream>
+#include <vector>
 
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
@@ -54,12 +57,14 @@ void communication::decodeJSON(std::string json){
     read_json(is, pt);
     std::string ip = pt.get<std::string>("ip");
     message_t type = (message_t)pt.get<int>("type");
+    int floor = pt.get<int>("content");
     switch(type) {
-        case BUTTON_COMMAND:
+        case COMMAND:
+            std::cout << "COMMAND" << floor << std::endl;
             break;
-        case BUTTON_CALL_UP:
+        case CALL_UP:
             break;
-        case BUTTON_CALL_DOWN:
+        case CALL_DOWN:
             break;
             /*
         case "STATE":
@@ -70,4 +75,27 @@ void communication::decodeJSON(std::string json){
             break;
             */
     };
+}
+void communication::checkMailbox() {
+    std::vector<std::string> mail = com->get_messages();
+    for(std::vector<std::string>::iterator it = mail.begin(); it != mail.end(); it++) {
+        decodeJSON(*it);
+        std::cout << *it << std::endl;
+    }
+}
+void communication::sendMail(message_t type, std::string content) {
+    com->send(toJSON(type, content));
+}
+void communication::sendMail(elev_button_type_t buttonType, int floor) {
+    switch(buttonType) {
+        case BUTTON_CALL_UP:
+            sendMail(CALL_UP, std::to_string(floor));
+            break;
+        case BUTTON_CALL_DOWN:
+            sendMail(CALL_DOWN, std::to_string(floor));
+            break;
+        case BUTTON_COMMAND:
+            sendMail(COMMAND, std::to_string(floor));
+            break;
+    }
 }
