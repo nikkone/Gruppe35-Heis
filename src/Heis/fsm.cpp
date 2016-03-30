@@ -23,7 +23,7 @@ ElevatorFSM::ElevatorFSM(ElevatorListEntry *elevator) {
 }
 
 void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
-    
+
 	localElevator->setFloor(floor, buttonType);
     elev_set_button_lamp(buttonType, floor, true);
 
@@ -33,7 +33,9 @@ void ElevatorFSM::stopButtonPressed(void) {
 }
 void ElevatorFSM::sensorActivated(int floor) {
 	elev_set_floor_indicator(floor);
+    //DELME DEBUG
 	localElevator->resetFloor(floor, DIRN_UP);
 	localElevator->resetFloor(floor, DIRN_DOWN);
 	resetFloorLights(floor);
+    //ENF DEBUG
 }
