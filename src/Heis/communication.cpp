@@ -74,14 +74,15 @@ void communication::decodeJSON(std::string json){
             break;
         case CALL_UP:
             fsm->buttonPressed(BUTTON_CALL_UP, floor);
-            std::cout << floor << std::endl;
             break;
         case CALL_DOWN:
             fsm->buttonPressed(BUTTON_CALL_DOWN, floor);
             break;
-            /*
-        case "STATE":
+            
+        case CURRENT_LOCATION:
+            std::cout << "Ip:" << ip << "Arrived at: " << floor << std::endl;
             break;
+            /*
         case "SENDMEALL":
             break;
         case "CURRENT_FLOOR":

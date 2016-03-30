@@ -30,9 +30,18 @@ int main() {
     //FSM init
     ElevatorFSM fsm = ElevatorFSM(elevatorList[192168001002]);
     communication kom = communication(fsm);
+    //int sensorSignal;
     while(true) {
         kom.checkMailbox();
-        { // Request button
+
+            static int prevSensor;
+            int f = elev_get_floor_sensor_signal();
+            if(f != -1  &&  f != prevSensor){
+                fsm.sensorActivated(f);
+                kom.sendMail(CURRENT_LOCATION, std::to_string(f));
+            }
+            prevSensor = f;
+
             static int prev[N_FLOORS][N_BUTTONS];
             for(int f = 0; f < N_FLOORS; f++){
                 for(int b = 0; b < N_BUTTONS; b++){
@@ -48,10 +57,10 @@ int main() {
                     }
                     prev[f][b] = v;
                 }
-            }
         }
+        usleep(100000);
     }
-    
+
     //std::string streng = kom.toJSON(COMMAND, "2");
     //std::cout << streng << std::endl;
 
