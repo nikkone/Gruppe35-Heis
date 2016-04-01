@@ -52,7 +52,7 @@ void network::connectionHandler(){
         socket_ptr clientSock(new tcp::socket(service));
         acceptor.accept(*clientSock);
         clientList_mtx.lock();
-        for(auto& sock : *clientList)
+        /*for(auto& sock : *clientList)
         {
             try{
                 if(sock.first->remote_endpoint().address().to_string() == clientSock->remote_endpoint().address().to_string())
@@ -60,6 +60,7 @@ void network::connectionHandler(){
             }
             catch(exception& e){}
         }
+        */
         clientList->emplace_back(make_pair(clientSock, time(NULL)));
         clientList_mtx.unlock();
         string s = clientSock->remote_endpoint().address().to_string();
@@ -138,8 +139,14 @@ void network::recieve(){
                         char readBuf[bufSize] = {0};
                         int bytesRead = clientSock.first->read_some(buffer(readBuf, bufSize));
                         string_ptr msg(new string(readBuf, bytesRead));
-                        if((*msg).compare(1,3,"syn"))
+                        if((*msg).find("syn") != string::npos)
                         {
+                            cout << "syn received " << *msg << endl;
+
+                            while((*msg).find("syn")){
+                                (*msg).erase((*msg).find("syn"),3);
+                            }
+
                             char data[3];
                             string ack = "ack";
                             strcpy(data, ack.c_str());
@@ -148,18 +155,24 @@ void network::recieve(){
                             }
                             catch(exception& e){}
                             //Guard against concocted messages
-                            if((*msg).length() != 3){
-                                InnboundMessages.push_back((*msg).substr(3,(*msg).length()));
+                            if((*msg).length() > 3){
+                                cout << "syn parse" << endl;
+                                InnboundMessages.push_back(*msg);
                             }
                         }
-                        else if((*msg).compare(1,3,"ack"))
+                        if((*msg).find("ack") != string::npos)
                         {
+                            cout << "ack received " << *msg << endl;
+                            while((*msg).find("ack")){
+                                (*msg).erase((*msg).find("ack"),3);
+                            }
                             clientSock.second = time(NULL);
-                            if((*msg).length() != 3){
-                                InnboundMessages.push_back((*msg).substr(3,(*msg).length()));
+                            if((*msg).length() > 3){
+                                cout << "ack parse" << endl;
+                                InnboundMessages.push_back((*msg).substr(2,(*msg).length()));
                             }
                         }
-                        else
+                        if (((*msg).find("syn") == string::npos) && ((*msg).find("ack") == string::npos))
                         {
                             //string client_ip = clientSock.first->remote_endpoint().address().to_string();
                             InnboundMessages.push_back(*msg);
@@ -206,6 +219,7 @@ void network::udpBroadcaster(){
         bool allreadyConnected = false;
         if(!msg->empty())
         {
+            /*
             for(auto& sock : *clientList)
             {
                 try{
@@ -214,7 +228,8 @@ void network::udpBroadcaster(){
                 }
                 catch(exception& e){}
             }
-            if(!allreadyConnected){
+            */
+            if(1){//!allreadyConnected){
                 try
                 {
                     tcp::endpoint ep(address::from_string(*msg), port);
