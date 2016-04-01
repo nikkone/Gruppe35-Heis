@@ -138,7 +138,7 @@ void network::recieve(){
                         char readBuf[bufSize] = {0};
                         int bytesRead = clientSock.first->read_some(buffer(readBuf, bufSize));
                         string_ptr msg(new string(readBuf, bytesRead));
-                        if (((*msg).find("syn") == string::npos) && ((*msg).find("ack") == string::npos))
+                        if ((msg->find("syn") == string::npos) && (msg->find("ack") == string::npos))
                         {
                             //string client_ip = clientSock.first->remote_endpoint().address().to_string();
                             InnboundMessages.push_back(*msg);
@@ -147,8 +147,9 @@ void network::recieve(){
                         {
                             cout << "syn received " << *msg << endl;
 
-                            while((*msg).find("syn") != string::npos){
-                                (*msg).erase((*msg).find("syn"),3);
+                            while(msg->find("syn") != string::npos){
+                                cout << "syn removed" << endl;
+                                msg->erase(msg->find("syn"),3);
                             }
 
                             char data[3];
@@ -159,7 +160,7 @@ void network::recieve(){
                             }
                             catch(exception& e){}
                             //Guard against concocted messages
-                            if((*msg).length() > 3){
+                            if(msg->length() > 10){
                                 cout << "syn parse" << endl;
                                 InnboundMessages.push_back(*msg);
                             }
@@ -167,13 +168,14 @@ void network::recieve(){
                         if((*msg).find("ack") != string::npos)
                         {
                             cout << "ack received " << *msg << endl;
-                            while((*msg).find("ack") != string::npos){
-                                (*msg).erase((*msg).find("ack"),3);
+                            while(msg->find("ack") != string::npos){
+                                cout << "ack removed" << endl;
+                                msg->erase(msg->find("ack"),3);
                             }
                             clientSock.second = time(NULL);
-                            if((*msg).length() > 3){
+                            if(msg->length() > 10){
                                 cout << "ack parse" << endl;
-                                InnboundMessages.push_back((*msg).substr(2,(*msg).length()));
+                                InnboundMessages.push_back(msg->substr(2,msg->length()));
                             }
                         }
                     }
