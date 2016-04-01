@@ -52,7 +52,7 @@ int main() {
                     if(b==1 && f==0) continue;
 
                     if(b==0 && f==N_FLOORS-1) continue;
-
+                    if(b==2) continue;
                     int v = elev_get_button_signal((elev_button_type_t)b/*BUTTON_COMMAND*/, f);
                     if(v  &&  v != prev[f][b]){
                         //if(!orders.exists((elev_button_type_t)b, f)) {
