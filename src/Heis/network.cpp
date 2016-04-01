@@ -140,8 +140,9 @@ void network::recieve(){
                         string_ptr msg(new string(readBuf, bytesRead));
                         if ((msg->find("syn") == string::npos) && (msg->find("ack") == string::npos))
                         {
-                            //string client_ip = clientSock.first->remote_endpoint().address().to_string();
-                            InnboundMessages.push_back(*msg);
+                            if(msg->length() > 10){
+                                InnboundMessages.push_back(*msg);
+                            }
                         }
                         if((*msg).find("syn") != string::npos)
                         {

@@ -55,10 +55,10 @@ int main() {
 
                     int v = elev_get_button_signal((elev_button_type_t)b/*BUTTON_COMMAND*/, f);
                     if(v  &&  v != prev[f][b]){
-                        if(!orders.exists((elev_button_type_t)b, f)) {
+                        //if(!orders.exists((elev_button_type_t)b, f)) {
                             fsm.buttonPressed((elev_button_type_t)b, f);
                             kom.sendMail((elev_button_type_t)b, f);
-                        }
+                        //}
                     }
                     prev[f][b] = v;
                 }
