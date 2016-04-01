@@ -138,11 +138,16 @@ void network::recieve(){
                         char readBuf[bufSize] = {0};
                         int bytesRead = clientSock.first->read_some(buffer(readBuf, bufSize));
                         string_ptr msg(new string(readBuf, bytesRead));
+                        if (((*msg).find("syn") == string::npos) && ((*msg).find("ack") == string::npos))
+                        {
+                            //string client_ip = clientSock.first->remote_endpoint().address().to_string();
+                            InnboundMessages.push_back(*msg);
+                        }
                         if((*msg).find("syn") != string::npos)
                         {
                             cout << "syn received " << *msg << endl;
 
-                            while((*msg).find("syn")){
+                            while((*msg).find("syn") != string::npos){
                                 (*msg).erase((*msg).find("syn"),3);
                             }
 
@@ -162,7 +167,7 @@ void network::recieve(){
                         if((*msg).find("ack") != string::npos)
                         {
                             cout << "ack received " << *msg << endl;
-                            while((*msg).find("ack")){
+                            while((*msg).find("ack") != string::npos){
                                 (*msg).erase((*msg).find("ack"),3);
                             }
                             clientSock.second = time(NULL);
@@ -170,11 +175,6 @@ void network::recieve(){
                                 cout << "ack parse" << endl;
                                 InnboundMessages.push_back((*msg).substr(2,(*msg).length()));
                             }
-                        }
-                        if (((*msg).find("syn") == string::npos) && ((*msg).find("ack") == string::npos))
-                        {
-                            //string client_ip = clientSock.first->remote_endpoint().address().to_string();
-                            InnboundMessages.push_back(*msg);
                         }
                     }
                     catch(exception& e){}
