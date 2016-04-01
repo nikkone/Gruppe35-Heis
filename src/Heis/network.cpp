@@ -144,7 +144,7 @@ void network::recieve(){
                                 InnboundMessages.push_back(*msg);
                             }
                         }
-                        if((*msg).find("syn") != string::npos)
+                        if(msg->find("syn") != string::npos)
                         {
                             cout << "syn received " << endl;
 
@@ -166,7 +166,7 @@ void network::recieve(){
                                 InnboundMessages.push_back(*msg);
                             }
                         }
-                        if((*msg).find("ack") != string::npos)
+                        if(msg->find("ack") != string::npos)
                         {
                             cout << "ack received " << endl;
                             while(msg->find("ack") != string::npos){
