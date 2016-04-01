@@ -52,7 +52,7 @@ void network::connectionHandler(){
         socket_ptr clientSock(new tcp::socket(service));
         acceptor.accept(*clientSock);
         clientList_mtx.lock();
-        /*for(auto& sock : *clientList)
+        for(auto& sock : *clientList)
         {
             try{
                 if(sock.first->remote_endpoint().address().to_string() == clientSock->remote_endpoint().address().to_string())
@@ -60,7 +60,6 @@ void network::connectionHandler(){
             }
             catch(exception& e){}
         }
-        */
         clientList->emplace_back(make_pair(clientSock, time(NULL)));
         clientList_mtx.unlock();
         string s = clientSock->remote_endpoint().address().to_string();
@@ -219,7 +218,6 @@ void network::udpBroadcaster(){
         bool allreadyConnected = false;
         if(!msg->empty())
         {
-            /*
             for(auto& sock : *clientList)
             {
                 try{
@@ -228,8 +226,7 @@ void network::udpBroadcaster(){
                 }
                 catch(exception& e){}
             }
-            */
-            if(1){//!allreadyConnected){
+            if(!allreadyConnected){
                 try
                 {
                     tcp::endpoint ep(address::from_string(*msg), port);
