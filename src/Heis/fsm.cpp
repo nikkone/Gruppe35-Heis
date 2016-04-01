@@ -24,8 +24,8 @@ ElevatorFSM::ElevatorFSM(OrderList *elevator) {
 
 void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
 
-	orders->add(buttonType, floor);
-    elev_set_button_lamp(buttonType, floor, true);
+    	orders->add(buttonType, floor);
+        elev_set_button_lamp(buttonType, floor, true);
 
 }
 void ElevatorFSM::stopButtonPressed(void) {

@@ -57,9 +57,9 @@ void communication::decodeJSON(std::string json){
     std::cout << "\""<< json <<"\""<<std::endl<< json.length() << std::endl;
     std::size_t found = json.find_last_of("}\\");
     json = json.substr(0,found) + "}";
-    /*found = json.find_first_of("{");
-    json = "{" + json.substr(0,found);
-*/
+    /*found = json.find_first_of("{\\");
+    json = "{" + json.substr(0,found);*/
+
     std::cout << "\""<< json <<"\""<<std::endl<< json.length() << std::endl;
     std::istringstream is(json);
 

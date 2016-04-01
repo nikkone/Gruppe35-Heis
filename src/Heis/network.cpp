@@ -145,7 +145,7 @@ void network::recieve(){
                         }
                         if((*msg).find("syn") != string::npos)
                         {
-                            cout << "syn received " << *msg << endl;
+                            cout << "syn received " << endl;
 
                             while(msg->find("syn") != string::npos){
                                 cout << "syn removed" << endl;
@@ -167,7 +167,7 @@ void network::recieve(){
                         }
                         if((*msg).find("ack") != string::npos)
                         {
-                            cout << "ack received " << *msg << endl;
+                            cout << "ack received " << endl;
                             while(msg->find("ack") != string::npos){
                                 cout << "ack removed" << endl;
                                 msg->erase(msg->find("ack"),3);

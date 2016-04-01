@@ -34,6 +34,12 @@ int OrderList::getNextFloor() {
     }
     return -1;
 }
+bool OrderList::exists(elev_button_type_t type, int floor) {
+    if(find(type, floor)==orders.end()) {
+        return false;
+    }
+    return true;
+}
 /*
 std::ostream &operator<<( std::ostream &output, const OrderList &OrderList_ref ) {
     for(std::list<Button>::iterator it = (OrderList_ref.orders).begin(); it != OrderList_ref.orders.end(); it++) {
