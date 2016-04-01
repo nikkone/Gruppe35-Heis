@@ -3,8 +3,8 @@
 //for cout
 #include <iostream>
 
-ElevatorFSM::ElevatorFSM(ElevatorListEntry *elevator) {
-	localElevator = elevator;
+ElevatorFSM::ElevatorFSM(OrderList *elevator) {
+	orders = elevator;
 }
  void resetFloorLights(int floor) {
     elev_set_button_lamp(BUTTON_COMMAND, floor, false);
@@ -24,18 +24,19 @@ ElevatorFSM::ElevatorFSM(ElevatorListEntry *elevator) {
 
 void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
 
-	localElevator->setFloor(floor, buttonType);
+	orders->add(buttonType, floor);
     elev_set_button_lamp(buttonType, floor, true);
 
 }
 void ElevatorFSM::stopButtonPressed(void) {
-    std::cout << *localElevator << std::endl;
+    //std::cout << *orders << std::endl;
+    orders->print();
 }
 void ElevatorFSM::sensorActivated(int floor) {
 	elev_set_floor_indicator(floor);
     //DELME DEBUG
-	localElevator->resetFloor(floor, DIRN_UP);
-	localElevator->resetFloor(floor, DIRN_DOWN);
+	orders->remove(BUTTON_CALL_UP, floor);
+	orders->remove(BUTTON_CALL_DOWN, floor);
 	resetFloorLights(floor);
     //ENF DEBUG
 }

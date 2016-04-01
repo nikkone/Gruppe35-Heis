@@ -1,6 +1,6 @@
 
 #include "elev.h"
-#include "ElevatorListEntry.hpp"
+#include "OrderList.hpp"
 #include "fsm.hpp"
 #include "communication.hpp"
 
@@ -24,11 +24,14 @@ int main() {
     elev_set_motor_direction(DIRN_UP);
     while(elev_get_floor_sensor_signal() == -1);
     elev_set_motor_direction(DIRN_STOP);
+    /*
     //Orderlist init
     std::map<long, ElevatorListEntry(*)> elevatorList;
     elevatorList[192168001002] = new ElevatorListEntry(4);
+    */
+    OrderList orders;
     //FSM init
-    ElevatorFSM fsm = ElevatorFSM(elevatorList[192168001002]);
+    ElevatorFSM fsm = ElevatorFSM(&orders);
     communication kom = communication(fsm);
     //int sensorSignal;
     while(true) {
@@ -57,6 +60,9 @@ int main() {
                     }
                     prev[f][b] = v;
                 }
+        }
+        if(elev_get_stop_signal()){
+            fsm.stopButtonPressed();
         }
         usleep(100000);
     }
