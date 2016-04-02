@@ -80,15 +80,20 @@ void communication::decodeJSON(std::string json){
             break;
         case CALL_DOWN:
             fsm->buttonPressed(BUTTON_CALL_DOWN, floor);
-            break;
-            
+            break;  
         case CURRENT_LOCATION:
+            (fsm->elevators)->setCurrentLocation(ip, floor);
+            //FOR DEBUG
             std::cout << "Ip:" << ip << "Arrived at: " << floor << std::endl;
             break;
-            /*
-        case "SENDMEALL":
+
+        case DESTINATION:
+            (fsm->elevators)->setDestination(ip, floor);
+            //FOR DEBUG
+            std::cout << "Ip:" << ip << "Going to: " << floor << std::endl;
             break;
-        case "CURRENT_FLOOR":
+            /*
+        case SENDMEALL:
             break;
             */
     }

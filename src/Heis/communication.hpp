@@ -4,7 +4,7 @@
 #include "elev.h"
 #include "fsm.hpp"
 typedef enum msg_types {
-    CALL_UP, CALL_DOWN, COMMAND, CURRENT_LOCATION
+    CALL_UP, CALL_DOWN, COMMAND, CURRENT_LOCATION, DESTINATION
 } message_t;
 class communication {
 	private:

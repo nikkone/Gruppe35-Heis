@@ -2,7 +2,7 @@
 #include "Elevator.hpp"
 #include <map>
 #include <string>
-// FOR DEBUGGIN
+// FOR DEBUGGING
 #include <iostream>
 class ElevatorMap {
 	private:

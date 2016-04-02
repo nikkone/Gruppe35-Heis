@@ -4,16 +4,24 @@
 #include "fsm.hpp"
 #include "communication.hpp"
 #include "ElevatorMap.hpp"
-//for exit
-//#include <cstdlib>
-//#include <map>
-//#include <vector>
-//#include <string>
-
-//For sleep, finnes ingen <cunistd>
 #include <unistd.h>
 #include <iostream>
 
+////////////////////////////      TODO       ///////////////////////////////
+/*
+    - LEGGE ALLE ENDRINGER UT PÅ NETTET OG LEGGE DEM INN LOKALT
+        - Destinasjon
+        + Lokasjon ved initialisering
+        - Informasjon til nytilkoblet heis
+    - Kostfunksjon for flere heiser
+        + Stop på veien til destinasjon kun dersom ingen andre heiser er på vei til etasjen
+        - Finn neste etasje med hensyn til andre heiser
+            - Sjekk om jeg er nærmest av de ledige heisene, om det er uavgjort, avgjør på IP
+    - Lagre backup til fil for å håndtere at datamaskinen mister strøm
+    - Håndtering av at heisen mister strøm
+
+*/
+///////////////////////////////////////////////////////////////////////////
 
 const int N_BUTTONS = 3;
 int main() {
@@ -24,10 +32,9 @@ int main() {
     ElevatorFSM fsm = ElevatorFSM(&orders, &elevators);
     communication kom = communication(fsm);
     elevators.addElevator(kom.getIP(), 0);
-
+    int prevSensor = -1;
     while(true) {
         kom.checkMailbox();
-        static int prevSensor;
         int f = elev_get_floor_sensor_signal();
         if(f != -1){
             fsm.sensorActivated(f);
