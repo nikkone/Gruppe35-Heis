@@ -22,6 +22,7 @@ class ElevatorFSM {
     	elev_motor_direction_t findDirection();
     	void TimerTimedOut();
 		void setNewDestination(int newDest);
+		bool stopCheck(int floor);
     public:
     	ElevatorFSM(OrderList* elevator);
 

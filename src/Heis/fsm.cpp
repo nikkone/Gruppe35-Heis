@@ -60,10 +60,10 @@ void ElevatorFSM::setState(state_t nextState) {
 elev_motor_direction_t ElevatorFSM::findDirection() {
     int direction = destination - currentFloor;
     if(direction > 0) {
-        std::cout << "OPP" << std::endl;
+        //std::cout << "OPP" << std::endl;
         return DIRN_UP;
     } else if(direction < 0) {
-        std::cout << "NED" << std::endl;
+        //std::cout << "NED" << std::endl;
         return DIRN_DOWN;
     } else {
         return DIRN_STOP;
@@ -82,13 +82,37 @@ void ElevatorFSM::stopButtonPressed(void) {
     //std::cout << *orders << std::endl;
     orders->print();
 }
+bool ElevatorFSM::stopCheck(int floor) {
+    if(floor==destination) {
+        return true;
+    }
+    if(orders->exists(BUTTON_COMMAND, floor)) {
+        return true;
+    }
+    switch(findDirection()) {
+        case DIRN_UP:
+            if(orders->exists(BUTTON_CALL_UP, floor)) {
+                return true;
+            }
+            break;
+        case DIRN_DOWN:
+            if(orders->exists(BUTTON_CALL_DOWN, floor)) {
+                return true;
+            }
+            break;
+        case DIRN_STOP:
+            return true;
+            break;
+    }
+    return false;
+}
 void ElevatorFSM::sensorActivated(int floor) {
     if(floor != currentFloor) {
         currentFloor = floor;
     	elev_set_floor_indicator(floor);
         //DELME DEBUG
         std::cout << floor << std::endl;
-        if(floor==destination) {
+        if(stopCheck(floor)) {
             setState(DOOR_OPEN);
         	orders->remove(BUTTON_CALL_UP, floor);
         	orders->remove(BUTTON_CALL_DOWN, floor);
