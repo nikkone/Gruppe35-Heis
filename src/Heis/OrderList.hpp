@@ -10,6 +10,8 @@ class OrderList {
         void add(elev_button_type_t type, int floor);
         void remove(elev_button_type_t type, int floor);
         int getNextFloor();
+
+        //FOR DEBUG
         //friend std::ostream &operator<<( std::ostream &output, const OrderList &OrderList_ref );
         void print();
 };

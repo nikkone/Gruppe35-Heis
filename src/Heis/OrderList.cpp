@@ -29,7 +29,7 @@ void OrderList::remove(elev_button_type_t type, int floor) {
 int OrderList::getNextFloor() {
     if(!orders.empty()) {
         int temp = orders.front().getFloor();
-        orders.pop_front();
+        //orders.pop_front();
         return temp;
     }
     return -1;
