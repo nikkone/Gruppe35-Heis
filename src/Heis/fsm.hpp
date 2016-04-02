@@ -3,6 +3,12 @@
 #include "elev.h"
 #include "OrderList.hpp"
 #include "timer.hpp"
+////////////////////////////      TODO       ///////////////////////////////
+/*
+	- LEGGE ALLE ENDRINGER UT PÅ NETTET
+	- Kostfunksjon for flere heiser
+*/
+///////////////////////////////////////////////////////////////////////////
 typedef enum state {
     IDLE, RUNNING, DOOR_OPEN, UNINITIALIZED
 } state_t;
@@ -27,7 +33,8 @@ class ElevatorFSM {
     	ElevatorFSM(OrderList* elevator);
 
 		void buttonPressed(elev_button_type_t buttonType, int floor);
-		void stopButtonPressed(void);
 		void sensorActivated(int floor);
+
+		void stopButtonPressed(void);// FOR DEBUG
 
 };

@@ -111,7 +111,7 @@ void ElevatorFSM::sensorActivated(int floor) {
         currentFloor = floor;
     	elev_set_floor_indicator(floor);
         //DELME DEBUG
-        std::cout << floor << std::endl;
+        //std::cout << floor << std::endl;
         if(stopCheck(floor)) {
             setState(DOOR_OPEN);
         	orders->remove(BUTTON_CALL_UP, floor);
@@ -132,6 +132,7 @@ void ElevatorFSM::sensorActivated(int floor) {
 }
 void ElevatorFSM::setNewDestination(int newDest) {
     if(elevatorState == IDLE) {
+        //HUSK Å SENDE DETTE PÅ NETTET
         destination = newDest;
         setState(RUNNING);
     }

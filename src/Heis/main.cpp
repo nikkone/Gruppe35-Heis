@@ -3,6 +3,7 @@
 #include "OrderList.hpp"
 #include "fsm.hpp"
 #include "communication.hpp"
+#include "ElevatorMap.hpp"
 //for exit
 //#include <cstdlib>
 //#include <map>
@@ -11,7 +12,6 @@
 
 //For sleep, finnes ingen <cunistd>
 #include <unistd.h>
-
 #include <iostream>
 
 
@@ -19,10 +19,13 @@ const int N_BUTTONS = 3;
 int main() {
     OrderList orders;
     //FSM init
-    //Timer tim = Timer();
     ElevatorFSM fsm = ElevatorFSM(&orders);
     communication kom = communication(fsm);
-    //int sensorSignal;
+
+    //Elevatormap init
+    ElevatorMap elevators;
+    elevators.addElevator(kom.findmyip(), 0);
+    elevators.print();
     while(true) {
         kom.checkMailbox();
         static int prevSensor;
@@ -31,6 +34,7 @@ int main() {
             fsm.sensorActivated(f);
             if(f != prevSensor) {
                 kom.sendMail(CURRENT_LOCATION, std::to_string(f));
+                std::cout << "Sending location: " <<f << std::endl;//Fiks slik at dette skjer i starten også
             }
         }
         prevSensor = f;
