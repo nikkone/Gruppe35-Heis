@@ -6,8 +6,9 @@
 #include "ElevatorMap.hpp"
 ////////////////////////////      TODO       ///////////////////////////////
 /*
-	- LEGGE ALLE ENDRINGER UT PÅ NETTET
+	- LEGGE ALLE ENDRINGER UT PÅ NETTET OG LEGGE DEM INN LOKALT
 	- Kostfunksjon for flere heiser
+	- Lokasjon i ved initialisering
 */
 ///////////////////////////////////////////////////////////////////////////
 typedef enum state {

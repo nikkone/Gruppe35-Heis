@@ -48,3 +48,11 @@ int ElevatorMap::getDestination(std::string ip) {
 int ElevatorMap::getDestination() {
 	return getDestination(first);
 }
+bool ElevatorMap::checkDestination(int floor) {
+	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
+		if((it->second).destination == floor) {
+			return true;
+		}
+    }
+    return false;
+}

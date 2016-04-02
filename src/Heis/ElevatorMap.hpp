@@ -19,6 +19,7 @@ class ElevatorMap {
 	int getDestination();
 	int getCurrentLocation(std::string ip);
 	int getCurrentLocation();
+	bool checkDestination(int floor);
 	//DEBUG
 	void print();
 };
