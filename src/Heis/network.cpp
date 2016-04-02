@@ -4,7 +4,7 @@
 #include <queue>
 #include <string>
 #include <cstdlib>
-#include <time.h>
+#include <ctime>
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
