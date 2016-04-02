@@ -3,6 +3,7 @@
 #include "elev.h"
 #include "OrderList.hpp"
 #include "timer.hpp"
+#include "ElevatorMap.hpp"
 ////////////////////////////      TODO       ///////////////////////////////
 /*
 	- LEGGE ALLE ENDRINGER UT PÅ NETTET
@@ -19,8 +20,7 @@ class ElevatorFSM {
     private:
     	OrderList* orders;
     	Timer* timer;
-    	int currentFloor;
-    	int destination;
+    	ElevatorMap* elevators;
     	state_t elevatorState;
 
     	void setState(state_t nextState);
@@ -30,7 +30,7 @@ class ElevatorFSM {
 		void setNewDestination(int newDest);
 		bool stopCheck(int floor);
     public:
-    	ElevatorFSM(OrderList* elevator);
+    	ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p);
 
 		void buttonPressed(elev_button_type_t buttonType, int floor);
 		void sensorActivated(int floor);

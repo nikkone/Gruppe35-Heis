@@ -18,14 +18,13 @@
 const int N_BUTTONS = 3;
 int main() {
     OrderList orders;
-    //FSM init
-    ElevatorFSM fsm = ElevatorFSM(&orders);
-    communication kom = communication(fsm);
-
     //Elevatormap init
     ElevatorMap elevators;
-    elevators.addElevator(kom.findmyip(), 0);
-    elevators.print();
+    //FSM init
+    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators);
+    communication kom = communication(fsm);
+    elevators.addElevator(kom.getIP(), 0);
+
     while(true) {
         kom.checkMailbox();
         static int prevSensor;

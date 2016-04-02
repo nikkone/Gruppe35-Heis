@@ -3,10 +3,11 @@
 //for cout
 #include <iostream>
 
-ElevatorFSM::ElevatorFSM(OrderList *elevator) {
+ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p) {
     //Endre elevator navn, IKKE BRA!!!!!
-	orders = elevator;
-    destination = -1;
+    elevators = elevatorMap_p;
+	orders = orderList_p;
+    //destination = -1;
     setState(UNINITIALIZED);
     timer = new Timer();
 }
@@ -27,7 +28,7 @@ void ElevatorFSM::setState(state_t nextState) {
             break;
         case DOOR_OPEN:
             elev_set_door_open_lamp(ON);
-            destination = -1;
+            elevators->setDestination(-1);
             elev_set_motor_direction(DIRN_STOP);
             timer->set(2);
             break;
@@ -41,6 +42,7 @@ void ElevatorFSM::setState(state_t nextState) {
             break; 
     }
 }
+
  void ElevatorFSM::resetFloorLights(int floor) {
     elev_set_button_lamp(BUTTON_COMMAND, floor, false);
     switch (floor) {
@@ -58,7 +60,7 @@ void ElevatorFSM::setState(state_t nextState) {
 }
 
 elev_motor_direction_t ElevatorFSM::findDirection() {
-    int direction = destination - currentFloor;
+    int direction = elevators->getDestination() - elevators->getCurrentLocation();
     if(direction > 0) {
         //std::cout << "OPP" << std::endl;
         return DIRN_UP;
@@ -71,7 +73,7 @@ elev_motor_direction_t ElevatorFSM::findDirection() {
 }
 
 void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
-    if( !( ((elevatorState == IDLE) || (elevatorState == DOOR_OPEN)) && (floor == currentFloor) ) ) {
+    if( !( ((elevatorState == IDLE) || (elevatorState == DOOR_OPEN)) && (floor == elevators->getCurrentLocation()) ) ) {
     	orders->add(buttonType, floor);
         elev_set_button_lamp(buttonType, floor, true);
     } else {
@@ -80,10 +82,11 @@ void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
 }
 void ElevatorFSM::stopButtonPressed(void) {
     //std::cout << *orders << std::endl;
-    orders->print();
+    elevators->print();
+    //elevators
 }
 bool ElevatorFSM::stopCheck(int floor) {
-    if(floor==destination) {
+    if(floor==elevators->getDestination()) {
         return true;
     }
     if(orders->exists(BUTTON_COMMAND, floor)) {
@@ -107,8 +110,8 @@ bool ElevatorFSM::stopCheck(int floor) {
     return false;
 }
 void ElevatorFSM::sensorActivated(int floor) {
-    if(floor != currentFloor) {
-        currentFloor = floor;
+    if(floor != elevators->getCurrentLocation()) {
+        elevators->setCurrentLocation(floor);
     	elev_set_floor_indicator(floor);
         //DELME DEBUG
         //std::cout << floor << std::endl;
@@ -133,7 +136,7 @@ void ElevatorFSM::sensorActivated(int floor) {
 void ElevatorFSM::setNewDestination(int newDest) {
     if(elevatorState == IDLE) {
         //HUSK Å SENDE DETTE PÅ NETTET
-        destination = newDest;
+        elevators->setDestination(newDest);
         setState(RUNNING);
     }
 }

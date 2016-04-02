@@ -32,7 +32,9 @@ char* communication::findmyip() {
         }
     return p;
 }
-
+std::string communication::getIP() {
+    return ip;
+}
 communication::communication(ElevatorFSM &inputFsm) {
     ip = findmyip();
     com = new network(8001, ip);
