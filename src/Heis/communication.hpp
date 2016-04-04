@@ -22,6 +22,6 @@ class communication {
 		std::string getIP();
 		communication(ElevatorFSM *inputFsm, ElevatorMap *elevators_p, OrderList *orders_p);
 		void checkMailbox();
-		void sendMail(message_t type, std::string content);
+		void sendMail(message_t type, int content);
 		void sendMail(elev_button_type_t buttonType, int floor);
 };

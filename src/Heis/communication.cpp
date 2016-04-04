@@ -99,8 +99,8 @@ void communication::decodeJSON(std::string json){
                 break;
                 
             case SENDMEALL:
-                sendMail(CURRENT_LOCATION, std::to_string(elevators->getCurrentLocation()));
-                sendMail(DESTINATION, std::to_string(elevators->getDestination()));
+                sendMail(CURRENT_LOCATION, elevators->getCurrentLocation());
+                sendMail(DESTINATION, elevators->getDestination());
                 for(int f = 0; f < N_FLOORS; f++){
                     for(int b = 0; b < N_BUTTONS-1; b++){
                         if(b==1 && f==0) continue; //Hindrer sjekking av ned i nedre etasje
@@ -127,26 +127,27 @@ void communication::checkMailbox() {
         std::cout << it->first << std::endl;
         if(it->second) {
             //elevators->addElevator(it->first);
-            sendMail(SENDMEALL, "Empty");
+            sendMail(SENDMEALL, 0);
         } else {
             elevators->removeElevator(it->first);
         }
     }
 
 }
-void communication::sendMail(message_t type, std::string content) {
-    com->send(toJSON(type, content));
+void communication::sendMail(message_t type, int content) {
+    std::cout << content << std::endl;
+    com->send(toJSON(type, std::to_string(content)));
 }
 void communication::sendMail(elev_button_type_t buttonType, int floor) {
     switch(buttonType) {
         case BUTTON_CALL_UP:
-            sendMail(CALL_UP, std::to_string(floor));
+            sendMail(CALL_UP, floor);
             break;
         case BUTTON_CALL_DOWN:
-            sendMail(CALL_DOWN, std::to_string(floor));
+            sendMail(CALL_DOWN, floor);
             break;
         case BUTTON_COMMAND:
-            sendMail(COMMAND, std::to_string(floor));
+            sendMail(COMMAND, floor);
             break;
     }
 }

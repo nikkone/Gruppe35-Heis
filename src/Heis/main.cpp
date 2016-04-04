@@ -37,7 +37,7 @@ int main() {
         if(f != -1){
             fsm.sensorActivated(f);
             if(f != prevSensor) {
-                kom.sendMail(CURRENT_LOCATION, std::to_string(f));
+                kom.sendMail(CURRENT_LOCATION, f);
                 std::cout << "Sending location: " <<f << std::endl;//Fiks slik at dette skjer i starten også
             }
         }
