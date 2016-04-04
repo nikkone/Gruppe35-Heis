@@ -178,7 +178,7 @@ void network::recieve(){
                             clientSock.second = time(NULL);
                             if(msg->length() > 10){
                                 //cout << "ack parse" << endl;
-                                InnboundMessages.push_back(msg->substr(2,msg->length()));
+                                InnboundMessages.push_back(*msg);
                             }
                         }
                     }

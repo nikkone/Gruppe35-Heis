@@ -61,11 +61,12 @@ void communication::decodeJSON(std::string json){
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
     if (first == std::string::npos) {
-        std::cout << "{ not found!" << '\n';
+        std::cout << "{ not found!" << std::endl;
+        std::cout << json << std::endl;
     } else if (last == std::string::npos) {
-        std::cout << "} not found!" << '\n';
+        std::cout << "} not found!" << std::endl;
     } else if (last < first) {
-        std::cout << "} before {!" << '\n';
+        std::cout << "} before {!" << std::endl;
     } else {
 
         json = json.substr (first,last-first+1);
