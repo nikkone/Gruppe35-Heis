@@ -1,6 +1,5 @@
 #include <iostream>
 #include <list>
-#include <map>
 #include <queue>
 #include <string>
 #include <cstdlib>
@@ -61,8 +60,9 @@ void network::connectionHandler(){
             catch(exception& e){}
         }
         clientList->emplace_back(make_pair(clientSock, time(NULL)));
-        clientList_mtx.unlock();
         string s = clientSock->remote_endpoint().address().to_string();
+        connectedPeers[s] = true;
+        clientList_mtx.unlock();
         cout << s << " connected sucsessfully!" << endl;
     }
 }
@@ -78,14 +78,16 @@ void network::heartbeat(){
                 if(seconds >= heartbeat_time)
                 { 
                     cout << "Client dissconected" << endl;
+                    //string s = clientSock.first->remote_endpoint().address().to_string();
+                    //connectedPeers[s] = false;
                     clientList->remove(clientSock);
                     break;
                 }
                 else
                 {
                     char data[3];
-                    string ack = "syn";
-                    strcpy(data, ack.c_str());
+                    string syn = "syn";
+                    strcpy(data,syn.c_str());
                     try{
                         clientSock.first->write_some(buffer(data));
                     }
@@ -146,36 +148,36 @@ void network::recieve(){
                         }
                         if(msg->find("syn") != string::npos)
                         {
-                            cout << "syn received " << endl;
+                            //cout << "syn received " << endl;
 
                             while(msg->find("syn") != string::npos){
-                                cout << "syn removed" << endl;
+                                //cout << "syn removed" << endl;
                                 msg->erase(msg->find("syn"),3);
                             }
 
                             char data[3];
                             string ack = "ack";
-                            strcpy(data, ack.c_str());
+                            strcpy(data,ack.c_str());
                             try{
                                 clientSock.first->write_some(buffer(data));
                             }
                             catch(exception& e){}
                             //Guard against concocted messages
                             if(msg->length() > 10){
-                                cout << "syn parse" << endl;
+                                //cout << "syn parse" << endl;
                                 InnboundMessages.push_back(*msg);
                             }
                         }
                         if(msg->find("ack") != string::npos)
                         {
-                            cout << "ack received " << endl;
+                            //cout << "ack received " << endl;
                             while(msg->find("ack") != string::npos){
-                                cout << "ack removed" << endl;
+                                //cout << "ack removed" << endl;
                                 msg->erase(msg->find("ack"),3);
                             }
                             clientSock.second = time(NULL);
                             if(msg->length() > 10){
-                                cout << "ack parse" << endl;
+                                //cout << "ack parse" << endl;
                                 InnboundMessages.push_back(msg->substr(2,msg->length()));
                             }
                         }
@@ -200,6 +202,13 @@ vector<string> network::get_messages(){
       InnboundMessages = {};
       return messages;
 }
+
+map<string, bool> network::get_listofPeers(){
+      map<string, bool> peers = connectedPeers;
+      connectedPeers.clear();
+      return peers;    
+}
+
 
 void network::udpBroadcaster(){
     //UDP broadcast, "Connect to me!" once on startup
@@ -237,6 +246,7 @@ void network::udpBroadcaster(){
                     sock->connect(ep);
                     clientList_mtx.lock();
                     clientList->emplace_back(make_pair(sock, time(NULL)));
+                    connectedPeers[*msg] = true;
                     clientList_mtx.unlock();
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
                 }

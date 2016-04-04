@@ -11,6 +11,8 @@ typedef enum state {
 enum toggle {
 	OFF, ON
 };
+
+const int N_BUTTONS = 3;
 class ElevatorFSM {
     private:
     	OrderList* orders;

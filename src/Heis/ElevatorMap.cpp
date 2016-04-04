@@ -2,20 +2,33 @@
 
 ElevatorMap::ElevatorMap() {
 }
+
+
 void ElevatorMap::addElevator(std::string ip, int location) {
 	if(elevatorMap.empty()) {
 		first = ip;
 	}
 	elevatorMap[ip] = Elevator(-1,location);
 }
+void ElevatorMap::addElevator(std::string ip) {
+	addElevator(ip, -1);
+}
+void ElevatorMap::removeElevator(std::string ip) {
+	if(elevatorMap.find(ip) != elevatorMap.end()) {
+		elevatorMap.erase(ip);
+	}
+}
 void ElevatorMap::print() {//endre til stream
     for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
-        std::cout << it->first << " : " << it->second << std::endl;
+        std::cout << "\"" << it->first << "\" : " << it->second;
     }
+    std::cout <<"--------------------------" << std::endl;
 }
 void ElevatorMap::setCurrentLocation(std::string ip, int location) {
 	if(elevatorMap.find(ip) != elevatorMap.end()) {
 		elevatorMap[ip].currentLocation = location;
+	} else {
+		addElevator(ip, location);
 	}
 }
 void ElevatorMap::setCurrentLocation(int location) {
@@ -23,6 +36,9 @@ void ElevatorMap::setCurrentLocation(int location) {
 }
 void ElevatorMap::setDestination(std::string ip, int destination) {
 	if(elevatorMap.find(ip) != elevatorMap.end()) {
+		elevatorMap[ip].destination = destination;
+	} else {
+		addElevator(ip);
 		elevatorMap[ip].destination = destination;
 	}
 }

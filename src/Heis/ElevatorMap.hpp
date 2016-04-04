@@ -11,6 +11,8 @@ class ElevatorMap {
 	public:
 	ElevatorMap();
 	void addElevator(std::string, int location);
+	void addElevator(std::string);
+	void removeElevator(std::string ip);
 	void setDestination(std::string ip, int destination);
 	void setDestination(int destination);
 	void setCurrentLocation(std::string ip, int location);

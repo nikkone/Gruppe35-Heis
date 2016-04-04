@@ -22,15 +22,13 @@
 
 */
 ///////////////////////////////////////////////////////////////////////////
-
-const int N_BUTTONS = 3;
 int main() {
     OrderList orders;
     //Elevatormap init
     ElevatorMap elevators;
     //FSM init
     ElevatorFSM fsm = ElevatorFSM(&orders, &elevators);
-    communication kom = communication(fsm);
+    communication kom = communication(&fsm, &elevators, &orders);
     elevators.addElevator(kom.getIP(), 0);
     int prevSensor = -1;
     while(true) {

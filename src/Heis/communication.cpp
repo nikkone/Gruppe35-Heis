@@ -6,6 +6,7 @@
 #include <sstream>
 #include <ostream>
 #include <vector>
+#include <map>
 
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
@@ -35,10 +36,12 @@ char* communication::findmyip() {
 std::string communication::getIP() {
     return ip;
 }
-communication::communication(ElevatorFSM &inputFsm) {
+communication::communication(ElevatorFSM *inputFsm, ElevatorMap *elevators_p, OrderList *orders_p) {
     ip = findmyip();
     com = new network(8001, ip);
-    fsm = &inputFsm;
+    fsm = inputFsm;
+    elevators = elevators_p;
+    orders = orders_p;
 }
 
 std::string communication::toJSON(message_t type, std::string content){
@@ -55,47 +58,60 @@ std::string communication::toJSON(message_t type, std::string content){
 
 void communication::decodeJSON(std::string json){
     ptree pt;
-    //Strip empty space at end of json
-    std::cout << "\""<< json <<"\""<<std::endl<< json.length() << std::endl;
-    std::size_t found = json.find_last_of("}\\");
-    json = json.substr(0,found) + "}";
-    /*found = json.find_first_of("{\\");
-    json = "{" + json.substr(0,found);*/
+    std::size_t first = json.find("{");
+    std::size_t last = json.find("}");
+    if (first == std::string::npos) {
+        std::cout << "{ not found!" << '\n';
+    } else if (last == std::string::npos) {
+        std::cout << "} not found!" << '\n';
+    } else if (last < first) {
+        std::cout << "} before {!" << '\n';
+    } else {
 
-    std::cout << "\""<< json <<"\""<<std::endl<< json.length() << std::endl;
-    std::istringstream is(json);
+        json = json.substr (first,last-first+1);
+        std::istringstream is(json);
 
-    read_json(is, pt);
+        read_json(is, pt);
 
-    std::string ip = pt.get<std::string>("ip");
-    message_t type = (message_t)pt.get<int>("type");
-    int floor = pt.get<int>("content");
-    switch(type) {
-        case COMMAND:
-            std::cout << "COMMAND" << floor << std::endl;
-            fsm->buttonPressed(BUTTON_COMMAND, floor);
-            break;
-        case CALL_UP:
-            fsm->buttonPressed(BUTTON_CALL_UP, floor);
-            break;
-        case CALL_DOWN:
-            fsm->buttonPressed(BUTTON_CALL_DOWN, floor);
-            break;  
-        case CURRENT_LOCATION:
-            (fsm->elevators)->setCurrentLocation(ip, floor);
-            //FOR DEBUG
-            std::cout << "Ip:" << ip << "Arrived at: " << floor << std::endl;
-            break;
-
-        case DESTINATION:
-            (fsm->elevators)->setDestination(ip, floor);
-            //FOR DEBUG
-            std::cout << "Ip:" << ip << "Going to: " << floor << std::endl;
-            break;
-            /*
-        case SENDMEALL:
-            break;
-            */
+        std::string ip = pt.get<std::string>("ip");
+        message_t type = (message_t)pt.get<int>("type");
+        int floor = pt.get<int>("content");
+        switch(type) {
+            case COMMAND:
+                std::cout << "COMMAND" << floor << std::endl;
+                fsm->buttonPressed(BUTTON_COMMAND, floor);
+                break;
+            case CALL_UP:
+                fsm->buttonPressed(BUTTON_CALL_UP, floor);
+                break;
+            case CALL_DOWN:
+                fsm->buttonPressed(BUTTON_CALL_DOWN, floor);
+                break;  
+            case CURRENT_LOCATION:
+                elevators->setCurrentLocation(ip, floor);
+                //FOR DEBUG
+                std::cout << "Ip:" << ip << "Arrived at: " << floor << std::endl;
+                break;
+            case DESTINATION:
+                elevators->setDestination(ip, floor);
+                //FOR DEBUG
+                std::cout << "Ip:" << ip << "Going to: " << floor << std::endl;
+                break;
+                
+            case SENDMEALL:
+                sendMail(CURRENT_LOCATION, std::to_string(elevators->getCurrentLocation()));
+                sendMail(DESTINATION, std::to_string(elevators->getDestination()));
+                for(int f = 0; f < N_FLOORS; f++){
+                    for(int b = 0; b < N_BUTTONS-1; b++){
+                        if(b==1 && f==0) continue; //Hindrer sjekking av ned i nedre etasje
+                        if(b==0 && f==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasj
+                        if(orders->exists((elev_button_type_t)b, f)) {
+                            sendMail((elev_button_type_t)b, f);
+                        }
+                    }
+                }
+                break;
+        }
     }
 }
 void communication::checkMailbox() {
@@ -105,6 +121,18 @@ void communication::checkMailbox() {
         decodeJSON(*it);
         
     }
+
+    std::map<std::string, bool> peers = com->get_listofPeers();
+    for(std::map<std::string, bool>::iterator it = peers.begin(); it != peers.end(); it++) {
+        std::cout << it->first << std::endl;
+        if(it->second) {
+            //elevators->addElevator(it->first);
+            sendMail(SENDMEALL, "Empty");
+        } else {
+            elevators->removeElevator(it->first);
+        }
+    }
+
 }
 void communication::sendMail(message_t type, std::string content) {
     com->send(toJSON(type, content));
