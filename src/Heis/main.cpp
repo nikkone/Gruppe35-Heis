@@ -6,7 +6,7 @@
 #include "ElevatorMap.hpp"
 #include <unistd.h>
 #include <iostream>
-
+#include "Backup.hpp"
 ////////////////////////////      TODO       ///////////////////////////////
 /*
     - LEGGE ALLE ENDRINGER UT PÅ NETTET OG LEGGE DEM INN LOKALT
@@ -31,8 +31,18 @@ int main() {
     communication kom = communication(&fsm, &elevators, &orders);
     elevators.addElevator(kom.getIP(), 0);
     int prevSensor = -1;
+    int tempDest=-1;
+    //Les inn backup
+    Backup backup("backup.txt", &fsm);//skift til .json
+    //backup.restore(&orders);
     while(true) {
         kom.checkMailbox();
+
+        //Send destination
+        if(tempDest != elevators.getDestination()) {
+            tempDest = elevators.getDestination();
+            kom.sendMail(DESTINATION, tempDest);
+        }
         int f = elev_get_floor_sensor_signal();
         if(f != -1){
             fsm.sensorActivated(f);
@@ -41,7 +51,7 @@ int main() {
                 std::cout << "Sending location: " <<f << std::endl;//Fiks slik at dette skjer i starten også
             }
         }
-        prevSensor = f;
+        prevSensor = f;//Sjekk legginn i if setning
         static int prev[N_FLOORS][N_BUTTONS];
         for(int f = 0; f < N_FLOORS; f++){
             for(int b = 0; b < N_BUTTONS; b++){
@@ -55,16 +65,19 @@ int main() {
                         kom.sendMail((elev_button_type_t)b, f);
                     //}
                 }
-                prev[f][b] = v;
+                prev[f][b] = v;//Sjekk legginn i if setning
             }
         }
         //DEBUG
         if(elev_get_stop_signal()){
             fsm.stopButtonPressed();
         }
+        //Skriv backup med mulig timer
+        //backup.make(&orders);
         //END DEBUG
         usleep(100000);
     }
+
     return 0;
 }
 

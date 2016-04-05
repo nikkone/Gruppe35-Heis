@@ -72,6 +72,7 @@ elev_motor_direction_t ElevatorFSM::findDirection() {
     }
 }
 
+
 void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
     if( !( ((elevatorState == IDLE) || (elevatorState == DOOR_OPEN)) && (floor == elevators->getCurrentLocation()) ) ) {
     	orders->add(buttonType, floor);

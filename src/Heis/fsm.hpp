@@ -18,7 +18,7 @@ class ElevatorFSM {
     	OrderList* orders;
     	Timer* timer;
     	state_t elevatorState;
-
+        ElevatorMap* elevators;
     	void setState(state_t nextState);
     	void resetFloorLights(int floor);
     	elev_motor_direction_t findDirection();
@@ -26,7 +26,7 @@ class ElevatorFSM {
 		void setNewDestination(int newDest);
 		bool stopCheck(int floor);
     public:
-    	ElevatorMap* elevators;
+
     	ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p);
 
 		void buttonPressed(elev_button_type_t buttonType, int floor);
