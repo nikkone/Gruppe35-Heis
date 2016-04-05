@@ -5,7 +5,6 @@ Backup::Backup(std::string filename, ElevatorFSM *fsm_p) {
 	fsm = fsm_p;
 }
 void Backup::writeStringToFile(std::string str) {
-    std::string input;
     std::ofstream out(backupFile);
     out << str;
     out.close();

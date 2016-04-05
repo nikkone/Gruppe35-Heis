@@ -10,15 +10,29 @@
 ////////////////////////////      TODO       ///////////////////////////////
 /*
     - LEGGE ALLE ENDRINGER UT PÅ NETTET OG LEGGE DEM INN LOKALT
-        - Destinasjon
+        + Destinasjon
         + Lokasjon ved initialisering
-        - Informasjon til nytilkoblet heis
+        + Informasjon til nytilkoblet heis
+        - Fikse at det noen ganger kommer to(like) heiser ved addElevator()
+        - Fjerning av heiser fra listen dersom de kobles fra.
     - Kostfunksjon for flere heiser
         + Stop på veien til destinasjon kun dersom ingen andre heiser er på vei til etasjen
         - Finn neste etasje med hensyn til andre heiser
             - Sjekk om jeg er nærmest av de ledige heisene, om det er uavgjort, avgjør på IP
     - Lagre backup til fil for å håndtere at datamaskinen mister strøm
-    - Håndtering av at heisen mister strøm
+        * Mulig fix er at i Backup::make() så har ikke stringen blitt laget, bare deklarert?
+        - Tenke over hvilke knapper som blir lagret til backup
+        - Timer som kjører backup ved jevne mellomrom
+    - Lage watchdog som gjenstarter programmet dersom det ikke responderer.
+        - Drepe programmet om det er åpent(og da ikke responderer)
+        - Restarte programmet
+    - Håndtering av at heisen(men ikke datamaskinen) mister strøm
+    - Bedre timer
+        - Muligens flertråds med sleep slik at det blir mer nøyaktig 3sec
+    - Nettverksmodul
+        - Se gjennom if og while-løkkene i receive()
+    - Gjøre klassene våre mer komplette
+        - Destructors hvis dynamisk alokert 
 
 */
 ///////////////////////////////////////////////////////////////////////////
