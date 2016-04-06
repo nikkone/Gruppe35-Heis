@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <tuple>
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
@@ -16,16 +17,16 @@ using namespace boost::asio::ip;
 
 typedef boost::shared_ptr<tcp::socket> socket_ptr;
 typedef boost::shared_ptr<string> string_ptr;
-typedef boost::shared_ptr< list< pair< socket_ptr, time_t > > > clientList_ptr;
+typedef boost::shared_ptr< list< tuple< socket_ptr, time_t, string > > > clientList_ptr;
 typedef boost::shared_ptr< queue<string> > messageQueue_ptr;
 
-const int bufSize = 128; // Find max size of state data
+const int bufSize = 128; 
 const double heartbeat_time = 3; //Acceptable waiting time?
 
 io_service service;
 boost::mutex OutMessageQueue_mtx;
 boost::mutex clientList_mtx;
-clientList_ptr clientList(new list< pair< socket_ptr, time_t > >);
+clientList_ptr clientList(new list< tuple< socket_ptr, time_t, string > >);
 messageQueue_ptr OutMessageQueue(new queue<string>);
 
 
@@ -53,14 +54,12 @@ void network::connectionHandler(){
         clientList_mtx.lock();
         for(auto& sock : *clientList)
         {
-            try{
-                if(sock.first->remote_endpoint().address().to_string() == clientSock->remote_endpoint().address().to_string())
-                    return; 
-            }
-            catch(exception& e){}
+            if(get<2>(sock) == clientSock->remote_endpoint().address().to_string())
+                return; 
+
         }
-        clientList->emplace_back(make_pair(clientSock, time(NULL)));
         string s = clientSock->remote_endpoint().address().to_string();
+        clientList->emplace_back(make_tuple(clientSock, time(NULL), s));
         connectedPeers[s] = true;
         clientList_mtx.unlock();
         cout << s << " connected sucsessfully!" << endl;
@@ -74,12 +73,12 @@ void network::heartbeat(){
             clientList_mtx.lock();
             for(auto& clientSock : *clientList)
             {
-                double seconds = difftime(time(NULL),clientSock.second);
+                double seconds = difftime(time(NULL), get<1>(clientSock));
                 if(seconds >= heartbeat_time)
                 { 
                     cout << "Client dissconected" << endl;
-                    //string s = clientSock.first->remote_endpoint().address().to_string();
-                    //connectedPeers[s] = false;
+                    string s = get<2>(clientSock);
+                    connectedPeers[s] = false;
                     clientList->remove(clientSock);
                     break;
                 }
@@ -89,7 +88,7 @@ void network::heartbeat(){
                     string syn = "syn";
                     strcpy(data,syn.c_str());
                     try{
-                        clientSock.first->write_some(buffer(data));
+                        get<0>(clientSock)->write_some(buffer(data));
                     }
                     catch(exception& e){}
                 }
@@ -113,7 +112,7 @@ void network::respond(){
             {
                 try
                 {
-                    clientSock.first->write_some(buffer(data));
+                    get<0>(clientSock)->write_some(buffer(data));
                 }
                 catch(exception& e){}
             }
@@ -134,11 +133,11 @@ void network::recieve(){
             clientList_mtx.lock();
             for(auto& clientSock : *clientList)
             {
-                if(clientSock.first->available())
+                if(get<0>(clientSock)->available())
                 {
                     try{
                         char readBuf[bufSize] = {0};
-                        int bytesRead = clientSock.first->read_some(buffer(readBuf, bufSize));
+                        int bytesRead = get<0>(clientSock)->read_some(buffer(readBuf, bufSize));
                         string_ptr msg(new string(readBuf, bytesRead));
                         if ((msg->find("syn") == string::npos) && (msg->find("ack") == string::npos))
                         {
@@ -159,7 +158,7 @@ void network::recieve(){
                             string ack = "ack";
                             strcpy(data,ack.c_str());
                             try{
-                                clientSock.first->write_some(buffer(data));
+                                get<0>(clientSock)->write_some(buffer(data));
                             }
                             catch(exception& e){}
                             //Guard against concocted messages
@@ -175,7 +174,7 @@ void network::recieve(){
                                 //cout << "ack removed" << endl;
                                 msg->erase(msg->find("ack"),3);
                             }
-                            clientSock.second = time(NULL);
+                            get<1>(clientSock) = time(NULL);
                             if(msg->length() > 10){
                                 //cout << "ack parse" << endl;
                                 InnboundMessages.push_back(*msg);
@@ -232,11 +231,8 @@ void network::udpBroadcaster(){
         {
             for(auto& sock : *clientList)
             {
-                try{
-                    if(sock.first->remote_endpoint().address().to_string() == *msg)
-                        allreadyConnected = true; 
-                }
-                catch(exception& e){}
+                if(get<2>(sock) == *msg) 
+                    allreadyConnected = true; 
             }
             if(!allreadyConnected){
                 try
@@ -245,7 +241,7 @@ void network::udpBroadcaster(){
                     socket_ptr sock(new tcp::socket(service));
                     sock->connect(ep);
                     clientList_mtx.lock();
-                    clientList->emplace_back(make_pair(sock, time(NULL)));
+                    clientList->emplace_back(make_tuple(sock, time(NULL), *msg));
                     connectedPeers[*msg] = true;
                     clientList_mtx.unlock();
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;

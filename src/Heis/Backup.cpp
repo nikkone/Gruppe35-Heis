@@ -37,14 +37,11 @@ void Backup::restore(OrderList *orders) {
 void Backup::make(OrderList *orders) {
 	std::string output;
     for(int f = 0; f < N_FLOORS; f++){
-        for(int b = 0; b < N_BUTTONS-1; b++){
-            if(b==1 && f==0) continue; //Hindrer sjekking av ned i nedre etasje
-            if(b==0 && f==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasj
-            if(orders->exists((elev_button_type_t)b, f)) {
-                output += toJSON((elev_button_type_t)b, f);
-            }
+        if(orders->exists(BUTTON_COMMAND, f)) {
+            output += toJSON(BUTTON_COMMAND, f);
         }
     }
+    std::cout << output;
     writeStringToFile(output);
 }
 std::string Backup::toJSON(elev_button_type_t type, int floor){

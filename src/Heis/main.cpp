@@ -25,6 +25,7 @@
         * Evt. Bare ta bort kommenteringen?
         - Tenke over hvilke knapper som blir lagret til backup
         - Timer som kjører backup ved jevne mellomrom
+        - Fikse lesing av fil hvis fil ikke finnes
     - Lage watchdog som gjenstarter programmet dersom det ikke responderer.
         - Drepe programmet om det er åpent(og da ikke responderer)
         - Restarte programmet
@@ -57,7 +58,7 @@ int main() {
     int tempDest= -1;
     //Les inn backup
     Backup backup("backup.txt", &fsm);//skift til .json?
-    //backup.restore(&orders);
+    backup.restore(&orders);
     while(true) {
         kom.checkMailbox();
 
@@ -96,7 +97,7 @@ int main() {
             fsm.stopButtonPressed();
         }
         //Skriv backup med mulig timer
-        //backup.make(&orders);
+        backup.make(&orders);
         //END DEBUG
         usleep(100000);
     }
