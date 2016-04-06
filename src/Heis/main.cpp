@@ -19,8 +19,10 @@
         + Stop på veien til destinasjon kun dersom ingen andre heiser er på vei til etasjen
         - Finn neste etasje med hensyn til andre heiser
             - Sjekk om jeg er nærmest av de ledige heisene, om det er uavgjort, avgjør på IP
+            ? Ta inn ElevatorMap i getNextFloor() muligens?
     - Lagre backup til fil for å håndtere at datamaskinen mister strøm
         * Mulig fix er at i Backup::make() så har ikke stringen blitt laget, bare deklarert?
+        * Evt. Bare ta bort kommenteringen?
         - Tenke over hvilke knapper som blir lagret til backup
         - Timer som kjører backup ved jevne mellomrom
     - Lage watchdog som gjenstarter programmet dersom det ikke responderer.
@@ -31,6 +33,13 @@
         - Muligens flertråds med sleep slik at det blir mer nøyaktig 3sec
     - Nettverksmodul
         - Se gjennom if og while-løkkene i receive()
+    - OrderList
+        - Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
+    - ElevatorFSM
+        - Endre navn på staten RUNNING til MOVING eller noe sånt(Tips fra Anders)
+    - ElevatorMap
+        - Endre navnet på funksjonene som bruker first til getMyDest osv.
+        ? Endre navner på first kanskje
     - Gjøre klassene våre mer komplette
         - Destructors hvis dynamisk alokert 
 
@@ -45,9 +54,9 @@ int main() {
     communication kom = communication(&fsm, &elevators, &orders);
     elevators.addElevator(kom.getIP(), 0);
     int prevSensor = -1;
-    int tempDest=-1;
+    int tempDest= -1;
     //Les inn backup
-    Backup backup("backup.txt", &fsm);//skift til .json
+    Backup backup("backup.txt", &fsm);//skift til .json?
     //backup.restore(&orders);
     while(true) {
         kom.checkMailbox();
