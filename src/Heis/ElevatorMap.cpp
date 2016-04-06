@@ -1,5 +1,6 @@
 #include "ElevatorMap.hpp"
-
+#include <cstdlib>
+#include <vector>
 ElevatorMap::ElevatorMap() {
 }
 
@@ -71,4 +72,40 @@ bool ElevatorMap::checkDestination(int floor) {
 		}
     }
     return false;
+}
+bool ElevatorMap::checkLocation(int floor) {
+	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
+		if((it->second).currentLocation == floor) {
+			return true;
+		}
+    }
+    return false;
+}
+/*
+bool ElevatorMap::isNearest(int targetFloor) {
+	int myDistance = abs(elevatorMap[first] - targetFloor);
+	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
+		if( (abs((it->second).currentLocation) - targetFloor) < myDistance) {
+			return false;
+		}
+    }
+    return true;
+}
+*/
+bool ElevatorMap::shouldTakeOrder(int order) {
+	int myDistance = abs(getCurrentLocation() - order);
+	std::vector<std::string> equidistantElevators;
+	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
+		if(abs((it->second).currentLocation - order) < myDistance) {
+			return false;
+		} else if( abs( (it->second).currentLocation - order) == myDistance ) {
+			equidistantElevators.push_back(it->first);
+		}
+    }
+    for(std::vector<std::string>::iterator it = equidistantElevators.begin(); it != equidistantElevators.end(); it++) {
+    	if(it->compare(first) > 0) {
+    		return false;
+    	}
+    }
+    return true;
 }

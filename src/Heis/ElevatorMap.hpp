@@ -22,6 +22,9 @@ class ElevatorMap {
 	int getCurrentLocation(std::string ip);
 	int getCurrentLocation();
 	bool checkDestination(int floor);
+	bool checkLocation(int floor);
+	//bool isNearest(int targetFloor);
+	bool shouldTakeOrder(int order);
 	//DEBUG
 	void print();
 };

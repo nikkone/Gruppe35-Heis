@@ -95,6 +95,10 @@ bool ElevatorFSM::stopCheck(int floor) {
     if(elevators->checkDestination(floor)) {
         return false;
     }
+    //Sjekker om andre heiser er i etasjen
+    if(elevators->checkLocation(floor)) {
+        return false;
+    }
     if(orders->exists(BUTTON_COMMAND, floor)) {
         return true;
     }
@@ -131,8 +135,8 @@ void ElevatorFSM::sensorActivated(int floor) {
         //END DEBUG
     }
     //Check if any new orders
-    if(orders->getNextFloor() != -1) {
-        setNewDestination(orders->getNextFloor());
+    if(orders->getNextFloor(elevators) != -1) {
+        setNewDestination(orders->getNextFloor(elevators));
     }
     //Poll timer
     if(timer->check()) {

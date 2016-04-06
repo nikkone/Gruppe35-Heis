@@ -34,6 +34,8 @@
         - Muligens flertråds med sleep slik at det blir mer nøyaktig 3sec
     - Nettverksmodul
         - Se gjennom if og while-løkkene i receive()
+    - Kommunikasjon
+        - Sendmeall fiks sender ikke etter kronologisk rekkefølge
     - OrderList
         - Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
     - ElevatorFSM

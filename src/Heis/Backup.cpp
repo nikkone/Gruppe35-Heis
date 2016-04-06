@@ -25,10 +25,8 @@ void Backup::restore(OrderList *orders) {
     std::size_t first = str.find('{');
     std::size_t last = str.find('}');
     while((first != std::string::npos) || (last != std::string::npos) || (last < first)){
-        //std::cout << str <<std::endl;
         std::string json = str.substr (first,last-first+1);
         str.erase(first,last-first+1);
-        //std::cout << "\"" << json << "\"" << std::endl;
         decodeJSON(json);
        	first = str.find('{');
         last = str.find('}');
@@ -41,7 +39,6 @@ void Backup::make(OrderList *orders) {
             output += toJSON(BUTTON_COMMAND, f);
         }
     }
-    std::cout << output;
     writeStringToFile(output);
 }
 std::string Backup::toJSON(elev_button_type_t type, int floor){
