@@ -144,40 +144,41 @@ void network::recieve(){
                             if(msg->length() > 10){
                                 InnboundMessages.push_back(*msg);
                             }
-                        }
-                        if(msg->find("syn") != string::npos)
-                        {
-                            //cout << "syn received " << endl;
+                        } else {
+                            if(msg->find("syn") != string::npos)
+                            {
+                                //cout << "syn received " << endl;
 
-                            while(msg->find("syn") != string::npos){
-                                //cout << "syn removed" << endl;
-                                msg->erase(msg->find("syn"),3);
-                            }
+                                do {
+                                    //cout << "syn removed" << endl;
+                                    msg->erase(msg->find("syn"),3);
+                                } while(msg->find("syn") != string::npos);
 
-                            char data[3];
-                            string ack = "ack";
-                            strcpy(data,ack.c_str());
-                            try{
-                                get<0>(clientSock)->write_some(buffer(data));
+                                char data[3];
+                                string ack = "ack";
+                                strcpy(data,ack.c_str());
+                                try{
+                                    get<0>(clientSock)->write_some(buffer(data));
+                                }
+                                catch(exception& e){}
+                                //Guard against concocted messages
+                                if(msg->length() > 10){
+                                    //cout << "syn parse" << endl;
+                                    InnboundMessages.push_back(*msg);
+                                }
                             }
-                            catch(exception& e){}
-                            //Guard against concocted messages
-                            if(msg->length() > 10){
-                                //cout << "syn parse" << endl;
-                                InnboundMessages.push_back(*msg);
-                            }
-                        }
-                        if(msg->find("ack") != string::npos)
-                        {
-                            //cout << "ack received " << endl;
-                            while(msg->find("ack") != string::npos){
-                                //cout << "ack removed" << endl;
-                                msg->erase(msg->find("ack"),3);
-                            }
-                            get<1>(clientSock) = time(NULL);
-                            if(msg->length() > 10){
-                                //cout << "ack parse" << endl;
-                                InnboundMessages.push_back(*msg);
+                            if(msg->find("ack") != string::npos)
+                            {
+                                //cout << "ack received " << endl;
+                                do {
+                                    //cout << "ack removed" << endl;
+                                    msg->erase(msg->find("ack"),3);
+                                } while(msg->find("ack") != string::npos);
+                                get<1>(clientSock) = time(NULL);
+                                if(msg->length() > 10){
+                                    //cout << "ack parse" << endl;
+                                    InnboundMessages.push_back(*msg);
+                                }
                             }
                         }
                     }

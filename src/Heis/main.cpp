@@ -13,19 +13,17 @@
         + Destinasjon
         + Lokasjon ved initialisering
         + Informasjon til nytilkoblet heis
-        - Fikse at det noen ganger kommer to(like) heiser ved addElevator()
-        - Fjerning av heiser fra listen dersom de kobles fra.
+        ? Fikse at det noen ganger kommer to(like) heiser ved addElevator()
+        + Fjerning av heiser fra listen dersom de kobles fra.
     - Kostfunksjon for flere heiser
         + Stop på veien til destinasjon kun dersom ingen andre heiser er på vei til etasjen
-        - Finn neste etasje med hensyn til andre heiser
-            - Sjekk om jeg er nærmest av de ledige heisene, om det er uavgjort, avgjør på IP
-            ? Ta inn ElevatorMap i getNextFloor() muligens?
+        + Finn neste etasje med hensyn til andre heiser
+            + Sjekk om jeg er nærmest av de ledige heisene, om det er uavgjort, avgjør på IP
+            + Ta inn ElevatorMap i getNextFloor() muligens?
     - Lagre backup til fil for å håndtere at datamaskinen mister strøm
-        * Mulig fix er at i Backup::make() så har ikke stringen blitt laget, bare deklarert?
-        * Evt. Bare ta bort kommenteringen?
-        - Tenke over hvilke knapper som blir lagret til backup
-        - Timer som kjører backup ved jevne mellomrom
-        - Fikse lesing av fil hvis fil ikke finnes
+        + Tenke over hvilke knapper som blir lagret til backup
+        + Timer som kjører backup ved jevne mellomrom
+        + Fikse lesing av fil hvis fil ikke finnes
     - Lage watchdog som gjenstarter programmet dersom det ikke responderer.
         - Drepe programmet om det er åpent(og da ikke responderer)
         - Restarte programmet
@@ -35,11 +33,11 @@
     - Nettverksmodul
         - Se gjennom if og while-løkkene i receive()
     - Kommunikasjon
-        - Sendmeall fiks sender ikke etter kronologisk rekkefølge
+        - Sendmeall fiks sender ikke etter kronologisk rekkefølge/samme med backup
     - OrderList
         - Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
     - ElevatorFSM
-        - Endre navn på staten RUNNING til MOVING eller noe sånt(Tips fra Anders)
+        + Endre navn på staten RUNNING til MOVING eller noe sånt(Tips fra Anders)
     - ElevatorMap
         - Endre navnet på funksjonene som bruker first til getMyDest osv.
         ? Endre navner på first kanskje
@@ -48,6 +46,7 @@
 
 */
 ///////////////////////////////////////////////////////////////////////////
+const int backupInterval = 1;
 int main() {
     OrderList orders;
     //Elevatormap init
@@ -61,6 +60,8 @@ int main() {
     //Les inn backup
     Backup backup("backup.txt", &fsm);//skift til .json?
     backup.restore(&orders);
+    Timer *backupTimer = new Timer();
+    backupTimer->set(backupInterval);
     while(true) {
         kom.checkMailbox();
 
@@ -98,8 +99,11 @@ int main() {
         if(elev_get_stop_signal()){
             fsm.stopButtonPressed();
         }
-        //Skriv backup med mulig timer
-        backup.make(&orders);
+        if(backupTimer->check()) {
+            //Skriv backup med mulig timer
+            backup.make(&orders);
+            backupTimer->set(backupInterval);
+        }
         //END DEBUG
         usleep(100000);
     }

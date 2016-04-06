@@ -10,14 +10,14 @@ void Backup::writeStringToFile(std::string str) {
     out.close();
 }
 std::string Backup::readStringFromFile() {
-    std::ifstream t(backupFile);
     std::string str;
-
-    t.seekg(0, std::ios::end);
-    str.reserve(t.tellg());
-    t.seekg(0, std::ios::beg);
-
-    str.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+    try {
+        std::ifstream t(backupFile);
+        t.seekg(0, std::ios::end);
+        str.reserve(t.tellg());
+        t.seekg(0, std::ios::beg);
+        str.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+    } catch(...) {}
     return str;
 }
 void Backup::restore(OrderList *orders) {

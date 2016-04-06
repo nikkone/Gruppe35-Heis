@@ -23,7 +23,7 @@ void ElevatorFSM::setState(state_t nextState) {
             elev_set_stop_lamp(OFF);
             elev_set_door_open_lamp(OFF);
             break;
-        case RUNNING:
+        case MOVING:
             elev_set_motor_direction(findDirection());
             break;
         case DOOR_OPEN:
@@ -83,7 +83,7 @@ void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
 }
 void ElevatorFSM::stopButtonPressed(void) {
     //std::cout << *orders << std::endl;
-    elevators->print();
+    orders->print();
     //elevators
 }
 bool ElevatorFSM::stopCheck(int floor) {
@@ -147,6 +147,6 @@ void ElevatorFSM::setNewDestination(int newDest) {
     if(elevatorState == IDLE) {
         //HUSK Å SENDE DETTE PÅ NETTET
         elevators->setDestination(newDest);
-        setState(RUNNING);
+        setState(MOVING);
     }
 }

@@ -6,7 +6,7 @@
 #include "ElevatorMap.hpp"
 
 typedef enum state {
-    IDLE, RUNNING, DOOR_OPEN, UNINITIALIZED
+    IDLE, MOVING, DOOR_OPEN, UNINITIALIZED
 } state_t;
 enum toggle {
 	OFF, ON
