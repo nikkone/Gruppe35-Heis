@@ -107,17 +107,19 @@ void communication::decodeJSON(std::string json){
                 break;
             case DESTINATION:
             //SE GJWENNOM
-                int currentDest = elevators->getDestination(ip);//FIX
-                if(currentDest != -1 && floor == -1) {
-                    if(currentDest!=0) {
-                        elev_set_button_lamp(BUTTON_CALL_DOWN, currentDest, OFF);
-                        orders->remove(BUTTON_CALL_DOWN, currentDest);
+//elevators->getDestination(ip);//FIX
+                if(elevators->getDestination(ip) != -1 && floor == -1) {
+                    
+                    if(elevators->getDestination(ip)!=0) {
+                        elev_set_button_lamp(BUTTON_CALL_DOWN, elevators->getDestination(ip), OFF);
+                        orders->remove(BUTTON_CALL_DOWN, elevators->getDestination(ip));
                     }
 
-                    if(currentDest!=N_FLOORS-1) {
-                        elev_set_button_lamp(BUTTON_CALL_UP, currentDest, OFF);
-                        orders->remove(BUTTON_CALL_UP, currentDest);
+                    if(elevators->getDestination(ip)!=N_FLOORS-1) {
+                        elev_set_button_lamp(BUTTON_CALL_UP, elevators->getDestination(ip), OFF);
+                        orders->remove(BUTTON_CALL_UP, elevators->getDestination(ip));
                     }
+                    
                 }
                 elevators->setDestination(ip, floor);
                 //FOR DEBUG
