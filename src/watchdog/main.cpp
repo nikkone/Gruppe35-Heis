@@ -1,43 +1,61 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/inotify.h>
+#include <signal.h>
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
 
 #define EVENT_SIZE  ( sizeof (struct inotify_event) )
 #define BUF_LEN     ( 1024 * ( EVENT_SIZE + 16 ) )
+#define TIMEOUT     3
 
-int main( int argc, char **argv ) 
-{
-  int length, i = 0;
-  int fd;
-  int wd;
+using namespace std;
+
+bool changed = false;
+
+// Hvordan starte ilag?
+// Kjøre system("./bin/watchdog"); i Heis?
+
+void isModified(){
   char buffer[BUF_LEN];
-
-  fd = inotify_init();
+  changed = false;
+  int fd = inotify_init();
 
   if ( fd < 0 ) {
-    perror( "inotify_init" );
+    return;
   }
 
-  wd = inotify_add_watch( fd, "/home/Gruppe35-Heis/backup.txt", IN_MODIFY);
-  length = read( fd, buffer, BUF_LEN );  
-
+  int wd = inotify_add_watch( fd, "backup.txt", IN_MODIFY);
+  //Blocking read
+  int length = read( fd, buffer, BUF_LEN );  
   if ( length < 0 ) {
-    perror( "read" );
-  }  
-
-  while ( i < length ) {
-    struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
-    if ( event->len ) {
-        if ( event->mask & IN_MODIFY ) {
-          printf( "The file %s was modified.\n", event->name );
-        }
-    i += EVENT_SIZE + event->len;
+    return;
   }
+  changed = true;
+  inotify_rm_watch( fd, wd );
 
-  ( void ) inotify_rm_watch( fd, wd );
-  ( void ) close( fd );
+  //closing the INOTIFY instance
+  close( fd );
+  return;
+}
 
-  exit( 0 );
+int main(){
+  system("xterm -e \"./bin/Heis\" &");
+  while(true) {
+    do{
+      boost::thread t(&isModified);
+      t.timed_join(boost::posix_time::seconds(TIMEOUT));
+    } while(changed == true);
+    cout << "timed out" << endl;
+    try {
+      system("killall -9 Heis");
+    } catch(...){}
+    cout << "timed out" << endl;
+    system("xterm -e \"./bin/Heis\" &");
+    cout << "timed out" << endl;
+  }
+  return 0;
 }

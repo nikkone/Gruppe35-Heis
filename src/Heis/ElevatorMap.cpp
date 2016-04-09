@@ -76,7 +76,9 @@ bool ElevatorMap::checkDestination(int floor) {
 bool ElevatorMap::checkLocation(int floor) {
 	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
 		if((it->second).currentLocation == floor) {
-			return true;
+			if(it->first != first) {
+				return true;
+			}
 		}
     }
     return false;

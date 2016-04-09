@@ -61,6 +61,7 @@ int main() {
     backupTimer->set(backupInterval);
     int previousFloorSensor = -1;
     int previousDestination= -1;
+    //std::system("xterm -e \"./bin/watchdog\" &");
     while(true) {
         kom.checkMailbox();
 
