@@ -109,12 +109,12 @@ void communication::decodeJSON(std::string json){
             case SENDMEALL:
                 sendMail(CURRENT_LOCATION, elevators->getCurrentLocation());
                 sendMail(DESTINATION, elevators->getDestination());
-                for(int f = 0; f < N_FLOORS; f++){
-                    for(int b = 0; b < N_BUTTONS-1; b++){
-                        if(b==1 && f==0) continue; //Hindrer sjekking av ned i nedre etasje
-                        if(b==0 && f==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasj
-                        if(orders->checkOrder((elev_button_type_t)b, f)) {
-                            sendMail((elev_button_type_t)b, f);
+                for(int floor = 0; floor < N_FLOORS; floor++){
+                    for(int button = 0; button < N_BUTTONS-1; button++){
+                        if(button==1 && floor==0) continue; //Hindrer sjekking av ned i nedre etasje
+                        if(button==0 && floor==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasj
+                        if(orders->checkOrder((elev_button_type_t)button, floor)) {
+                            sendMail((elev_button_type_t)button, floor);
                         }
                     }
                 }

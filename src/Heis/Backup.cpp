@@ -34,9 +34,9 @@ void Backup::restore(OrderList *orders) {
 }
 void Backup::make(OrderList *orders) {
 	std::string output;
-    for(int f = 0; f < N_FLOORS; f++){
-        if(orders->checkOrder(BUTTON_COMMAND, f)) {
-            output += toJSON(BUTTON_COMMAND, f);
+    for(int floor = 0; floor < N_FLOORS; floor++){
+        if(orders->checkOrder(BUTTON_COMMAND, floor)) {
+            output += toJSON(BUTTON_COMMAND, floor);
         }
     }
     writeStringToFile(output);

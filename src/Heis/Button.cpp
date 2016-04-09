@@ -1,15 +1,15 @@
 #include "Button.hpp"
-Button::Button(elev_button_type_t t, int f) {
-    type=t;
-    floor=f;
+Button::Button(elev_button_type_t type, int floor) {
+    buttonType=type;
+    buttonFloor=floor;
 }
 int Button::getFloor() {
-    return floor;
+    return buttonFloor;
 }
 elev_button_type_t Button::getType() {
-    return type;
+    return buttonType;
 }
 std::ostream &operator<<( std::ostream &output, const Button &Button_ref ) {
-    output << Button_ref.type << "-" << Button_ref.floor << std::endl;
+    output << Button_ref.buttonType << "-" << Button_ref.buttonFloor << std::endl;
     return output;
 }

@@ -82,15 +82,16 @@ int main() {
 
         static bool prev[N_FLOORS][N_BUTTONS];
         for(int floor = 0; floor < N_FLOORS; floor++){
-            for(int button = 0; button < N_BUTTONS; b++){
-                if(button==1 && floor==0) continue; //Hindrer sjekking av ned i nedre etasje
-                if(button==0 && floor==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasje
+            for(int button = 0; button < N_BUTTONS; button++){
+                if(button==BUTTON_CALL_DOWN && floor==0) continue; //Hindrer sjekking av ned i nedre etasje
+                if(button==BUTTON_CALL_UP && floor==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasje
                 bool buttonSignal = elev_get_button_signal((elev_button_type_t)button, floor);
                 if(buttonSignal  &&  buttonSignal != prev[floor][button]){
                     //if(!orders.checkOrder((elev_button_type_t)button, floor)) {
                         fsm.buttonPressed((elev_button_type_t)button, floor);
-                        if(button==2) continue; //Hindrer sending av yttre knapper
-                        kom.sendMail((elev_button_type_t)button, floor);
+                        if(button!=BUTTON_COMMAND) {
+                            kom.sendMail((elev_button_type_t)button, floor);
+                        }
                     //}
                 }
                 prev[floor][button] = buttonSignal;//Sjekk legginn i if setning
