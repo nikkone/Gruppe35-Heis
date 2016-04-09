@@ -91,11 +91,16 @@ void communication::decodeJSON(std::string json){
             case CURRENT_LOCATION:
                 elevators->setCurrentLocation(ip, floor);
                 if( (floor == elevators->getDestination(ip)) && (floor != -1) ) {
-                    orders->remove(BUTTON_CALL_DOWN, floor);
-                    orders->remove(BUTTON_CALL_UP, floor);
-                    elev_set_button_lamp(BUTTON_CALL_DOWN, floor, OFF);
-                    elev_set_button_lamp(BUTTON_CALL_UP, floor, OFF);
 
+                    if(floor!=0) {
+                        elev_set_button_lamp(BUTTON_CALL_DOWN, floor, OFF);
+                        orders->remove(BUTTON_CALL_DOWN, floor);
+                    }
+
+                    if(floor!=N_FLOORS-1) {
+                        elev_set_button_lamp(BUTTON_CALL_UP, floor, OFF);
+                        orders->remove(BUTTON_CALL_UP, floor);
+                    }
                 }
                 //FOR DEBUG
                 std::cout << "Ip:" << ip << "Arrived at: " << floor << std::endl;

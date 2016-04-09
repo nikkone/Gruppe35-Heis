@@ -74,7 +74,7 @@ int main() {
         int floorSensorSignal = elev_get_floor_sensor_signal();
         if(floorSensorSignal != -1) {
             fsm.floorSensorActivated(floorSensorSignal);
-            if(floorSensorSignal != previousFloorSensor) {
+            if(floorSensorSignal != previousFloorSensor || floorSensorSignal  == elevators.getDestination()) {
                 kom.sendMail(CURRENT_LOCATION, floorSensorSignal);
                 std::cout << "Sending location: " << floorSensorSignal << std::endl;//Fiks slik at dette skjer i starten også, tror fikset?
                 previousFloorSensor = floorSensorSignal;//Sjekk legginn i if setning???????????    
