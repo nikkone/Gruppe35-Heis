@@ -9,24 +9,25 @@
 #include "Backup.hpp"
 ////////////////////////////      TODO       ///////////////////////////////
 /*
-    - LEGGE ALLE ENDRINGER UT PÅ NETTET OG LEGGE DEM INN LOKALT
+    + LEGGE ALLE ENDRINGER UT PÅ NETTET OG LEGGE DEM INN LOKALT
         + Destinasjon
         + Lokasjon ved initialisering
         + Informasjon til nytilkoblet heis
         ? Fikse at det noen ganger kommer to(like) heiser ved addElevator()
         + Fjerning av heiser fra listen dersom de kobles fra.
-    - Kostfunksjon for flere heiser
+    + Kostfunksjon for flere heiser
         + Stop på veien til destinasjon kun dersom ingen andre heiser er på vei til etasjen
         + Finn neste etasje med hensyn til andre heiser
             + Sjekk om jeg er nærmest av de ledige heisene, om det er uavgjort, avgjør på IP
             + Ta inn ElevatorMap i getNextFloor() muligens?
-    - Lagre backup til fil for å håndtere at datamaskinen mister strøm
+    + Lagre backup til fil for å håndtere at datamaskinen mister strøm
         + Tenke over hvilke knapper som blir lagret til backup
         + Timer som kjører backup ved jevne mellomrom
         + Fikse lesing av fil hvis fil ikke finnes
     - Lage watchdog som gjenstarter programmet dersom det ikke responderer.
         - Drepe programmet om det er åpent(og da ikke responderer)
         - Restarte programmet
+    ? Lage funksjon som oppdaterer lysene ut fra orderlist
     - Håndtering av at heisen(men ikke datamaskinen) mister strøm
     - Bedre timer
         - Muligens flertråds med sleep slik at det blir mer nøyaktig 3sec
@@ -35,7 +36,8 @@
     - Kommunikasjon
         - Sendmeall fiks sender ikke etter kronologisk rekkefølge/samme med backup
     - OrderList
-        - Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
+        + Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
+        - Fjerne first på en eller annen måte
     - ElevatorFSM
         + Endre navn på staten RUNNING til MOVING eller noe sånt(Tips fra Anders)
     - ElevatorMap
@@ -46,68 +48,66 @@
 
 */
 ///////////////////////////////////////////////////////////////////////////
-const int backupInterval = 1;
+const int backupInterval = 1;//seconds
 int main() {
     OrderList orders;
-    //Elevatormap init
     ElevatorMap elevators;
-    //FSM init
     ElevatorFSM fsm = ElevatorFSM(&orders, &elevators);
     communication kom = communication(&fsm, &elevators, &orders);
     elevators.addElevator(kom.getIP(), 0);
-    int prevSensor = -1;
-    int tempDest= -1;
-    //Les inn backup
     Backup backup("backup.txt", &fsm);//skift til .json?
     backup.restore(&orders);
-    Timer *backupTimer = new Timer();
+    Timer *backupTimer = new Timer();//Endre til ikke dynamisk alokert
     backupTimer->set(backupInterval);
+    int previousFloorSensor = -1;
+    int previousDestination= -1;
     while(true) {
         kom.checkMailbox();
 
         //Send destination
-        if(tempDest != elevators.getDestination()) {
-            tempDest = elevators.getDestination();
-            kom.sendMail(DESTINATION, tempDest);
+        if(previousDestination != elevators.getDestination()) {
+            previousDestination = elevators.getDestination();
+            kom.sendMail(DESTINATION, previousDestination);
         }
-        int f = elev_get_floor_sensor_signal();
-        if(f != -1){
-            fsm.sensorActivated(f);
-            if(f != prevSensor) {
-                kom.sendMail(CURRENT_LOCATION, f);
-                std::cout << "Sending location: " <<f << std::endl;//Fiks slik at dette skjer i starten også
+
+        int floorSensorSignal = elev_get_floor_sensor_signal();
+        if(floorSensorSignal != -1) {
+            fsm.floorSensorActivated(floorSensorSignal);
+            if(floorSensorSignal != previousFloorSensor) {
+                kom.sendMail(CURRENT_LOCATION, floorSensorSignal);
+                std::cout << "Sending location: " << floorSensorSignal << std::endl;//Fiks slik at dette skjer i starten også, tror fikset?
+                previousFloorSensor = floorSensorSignal;//Sjekk legginn i if setning???????????    
             }
         }
-        prevSensor = f;//Sjekk legginn i if setning
-        static int prev[N_FLOORS][N_BUTTONS];
-        for(int f = 0; f < N_FLOORS; f++){
-            for(int b = 0; b < N_BUTTONS; b++){
-                if(b==1 && f==0) continue; //Hindrer sjekking av ned i nedre etasje
-                if(b==0 && f==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasje
-                int v = elev_get_button_signal((elev_button_type_t)b, f);
-                if(v  &&  v != prev[f][b]){
-                    //if(!orders.exists((elev_button_type_t)b, f)) {
-                        fsm.buttonPressed((elev_button_type_t)b, f);
-                        if(b==2) continue; //Hindrer sending av yttre knapper
-                        kom.sendMail((elev_button_type_t)b, f);
+
+        static bool prev[N_FLOORS][N_BUTTONS];
+        for(int floor = 0; floor < N_FLOORS; floor++){
+            for(int button = 0; button < N_BUTTONS; b++){
+                if(button==1 && floor==0) continue; //Hindrer sjekking av ned i nedre etasje
+                if(button==0 && floor==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasje
+                bool buttonSignal = elev_get_button_signal((elev_button_type_t)button, floor);
+                if(buttonSignal  &&  buttonSignal != prev[floor][button]){
+                    //if(!orders.checkOrder((elev_button_type_t)button, floor)) {
+                        fsm.buttonPressed((elev_button_type_t)button, floor);
+                        if(button==2) continue; //Hindrer sending av yttre knapper
+                        kom.sendMail((elev_button_type_t)button, floor);
                     //}
                 }
-                prev[f][b] = v;//Sjekk legginn i if setning
+                prev[floor][button] = buttonSignal;//Sjekk legginn i if setning
             }
         }
+
         //DEBUG
         if(elev_get_stop_signal()){
             fsm.stopButtonPressed();
         }
+        //END DEBUG
         if(backupTimer->check()) {
-            //Skriv backup med mulig timer
             backup.make(&orders);
             backupTimer->set(backupInterval);
         }
-        //END DEBUG
         usleep(100000);
     }
 
     return 0;
 }
-

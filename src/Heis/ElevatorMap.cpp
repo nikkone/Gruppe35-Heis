@@ -81,17 +81,6 @@ bool ElevatorMap::checkLocation(int floor) {
     }
     return false;
 }
-/*
-bool ElevatorMap::isNearest(int targetFloor) {
-	int myDistance = abs(elevatorMap[first] - targetFloor);
-	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
-		if( (abs((it->second).currentLocation) - targetFloor) < myDistance) {
-			return false;
-		}
-    }
-    return true;
-}
-*/
 bool ElevatorMap::shouldTakeOrder(int order) {
 	int myDistance = abs(getCurrentLocation() - order);
 	std::vector<std::string> equidistantElevators;

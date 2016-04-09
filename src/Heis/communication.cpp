@@ -113,7 +113,7 @@ void communication::decodeJSON(std::string json){
                     for(int b = 0; b < N_BUTTONS-1; b++){
                         if(b==1 && f==0) continue; //Hindrer sjekking av ned i nedre etasje
                         if(b==0 && f==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasj
-                        if(orders->exists((elev_button_type_t)b, f)) {
+                        if(orders->checkOrder((elev_button_type_t)b, f)) {
                             sendMail((elev_button_type_t)b, f);
                         }
                     }

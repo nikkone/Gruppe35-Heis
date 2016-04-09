@@ -35,7 +35,7 @@ void Backup::restore(OrderList *orders) {
 void Backup::make(OrderList *orders) {
 	std::string output;
     for(int f = 0; f < N_FLOORS; f++){
-        if(orders->exists(BUTTON_COMMAND, f)) {
+        if(orders->checkOrder(BUTTON_COMMAND, f)) {
             output += toJSON(BUTTON_COMMAND, f);
         }
     }

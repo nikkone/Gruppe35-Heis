@@ -29,9 +29,9 @@ void OrderList::remove(elev_button_type_t type, int floor) {
 int OrderList::getNextFloor(ElevatorMap *elevators) {
     if(!orders.empty()) {
         int nextOrder;
-        for(std::list<Button>::iterator it = orders.begin(); it != orders.end(); it++) {
-            nextOrder = it->getFloor();
-            if(it->getType() == BUTTON_COMMAND) {//Utfør intern kommando uansett
+        for(std::list<Button>::iterator button = orders.begin(); button != orders.end(); button++) {
+            nextOrder = button->getFloor();
+            if(button->getType() == BUTTON_COMMAND) {//Utfør intern kommando uansett
                 return nextOrder;
             } else {//Kun for opp og ned knapper
                 if(elevators->checkDestination(nextOrder) || elevators->checkLocation(nextOrder)) {
@@ -48,7 +48,7 @@ int OrderList::getNextFloor(ElevatorMap *elevators) {
     }
     return -1;
 }
-bool OrderList::exists(elev_button_type_t type, int floor) {
+bool OrderList::checkOrder(elev_button_type_t type, int floor) {
     if(find(type, floor)==orders.end()) {
         return false;
     }
