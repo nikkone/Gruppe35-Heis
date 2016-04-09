@@ -64,21 +64,26 @@ int main() {
     //std::system("xterm -e \"./bin/watchdog\" &");
     while(true) {
         kom.checkMailbox();
-
+        //Ser etter ordre, burde kanskje vert flyttet til main
+        if(orders.getNextFloor(&elevators) != -1) {
+            fsm.newDestination(orders.getNextFloor(&elevators));
+            std::cout << "New order: "<< std::endl;
+        }
         //Send destination
         if(previousDestination != elevators.getDestination()) {
             previousDestination = elevators.getDestination();
+            std::cout << "Sending destination: " << previousDestination << std::endl;
             kom.sendMail(DESTINATION, previousDestination);
         }
 
         int floorSensorSignal = elev_get_floor_sensor_signal();
         if(floorSensorSignal != -1) {
-            fsm.floorSensorActivated(floorSensorSignal);
-            if(floorSensorSignal != previousFloorSensor || floorSensorSignal  == elevators.getDestination()) {
+            if(floorSensorSignal != previousFloorSensor) {
                 kom.sendMail(CURRENT_LOCATION, floorSensorSignal);
                 std::cout << "Sending location: " << floorSensorSignal << std::endl;//Fiks slik at dette skjer i starten også, tror fikset?
                 previousFloorSensor = floorSensorSignal;//Sjekk legginn i if setning???????????    
             }
+            fsm.floorSensorActivated(floorSensorSignal);
         }
 
         static bool prev[N_FLOORS][N_BUTTONS];

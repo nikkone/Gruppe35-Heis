@@ -106,6 +106,19 @@ void communication::decodeJSON(std::string json){
                 std::cout << "Ip:" << ip << "Arrived at: " << floor << std::endl;
                 break;
             case DESTINATION:
+            //SE GJWENNOM
+                int currentDest = elevators->getDestination(ip);//FIX
+                if(currentDest != -1 && floor == -1) {
+                    if(currentDest!=0) {
+                        elev_set_button_lamp(BUTTON_CALL_DOWN, currentDest, OFF);
+                        orders->remove(BUTTON_CALL_DOWN, currentDest);
+                    }
+
+                    if(currentDest!=N_FLOORS-1) {
+                        elev_set_button_lamp(BUTTON_CALL_UP, currentDest, OFF);
+                        orders->remove(BUTTON_CALL_UP, currentDest);
+                    }
+                }
                 elevators->setDestination(ip, floor);
                 //FOR DEBUG
                 std::cout << "Ip:" << ip << "Going to: " << floor << std::endl;

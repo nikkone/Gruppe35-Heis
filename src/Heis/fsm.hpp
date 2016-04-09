@@ -23,7 +23,6 @@ class ElevatorFSM {
     	void resetFloorLights(int floor);
     	elev_motor_direction_t findDirection();
     	void TimerTimedOut();
-		void setNewDestination(int floor);
 		bool stopCheck(int floor);
     public:
 
@@ -33,5 +32,5 @@ class ElevatorFSM {
 		void floorSensorActivated(int floor);
 
 		void stopButtonPressed(void);// FOR DEBUG
-
+        void newDestination(int floor);
 };

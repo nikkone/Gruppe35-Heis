@@ -69,12 +69,8 @@ elev_motor_direction_t ElevatorFSM::findDirection() {
 
 
 void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
-    if( !( ((elevatorState == IDLE) || (elevatorState == DOOR_OPEN)) && (floor == elevators->getCurrentLocation()) ) ) {
-    	orders->add(buttonType, floor);
-        elev_set_button_lamp(buttonType, floor, ON);
-    } else {
-        setState(DOOR_OPEN);
-    }
+    orders->add(buttonType, floor);
+    elev_set_button_lamp(buttonType, floor, ON);
 }
 void ElevatorFSM::stopButtonPressed(void) {
     orders->print();
@@ -113,7 +109,8 @@ bool ElevatorFSM::stopCheck(int floor) {
     return false;
 }
 void ElevatorFSM::floorSensorActivated(int floor) {
-    if(floor != elevators->getCurrentLocation()) {
+
+    if((floor != elevators->getCurrentLocation()) || (floor == elevators->getDestination())) {
         elevators->setCurrentLocation(floor);
     	elev_set_floor_indicator(floor);
         if(stopCheck(floor)) {
@@ -124,16 +121,13 @@ void ElevatorFSM::floorSensorActivated(int floor) {
         	resetFloorLights(floor);
         }
     }
-    //Ser etter ordre, burde kanskje vert flyttet til main
-    if(orders->getNextFloor(elevators) != -1) {
-        setNewDestination(orders->getNextFloor(elevators));
-    }
+
     //Poll timer, bør kun gjøres i state DOOR_OPEN
     if(timer->check()) {
         TimerTimedOut();
     }
 }
-void ElevatorFSM::setNewDestination(int floor) {
+void ElevatorFSM::newDestination(int floor) {
     if(elevatorState == IDLE) {
         elevators->setDestination(floor);
         setState(MOVING);
