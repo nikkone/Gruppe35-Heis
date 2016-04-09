@@ -76,6 +76,9 @@ void ElevatorFSM::stopButtonPressed(void) {
     orders->print();
 }
 bool ElevatorFSM::stopCheck(int floor) {
+    if(orders->checkOrder(BUTTON_COMMAND, floor)) {
+        return true;
+    }
     //Sjekker om etasjen er min destinasjon
     if(floor==elevators->getDestination()) {
         return true;
@@ -88,9 +91,7 @@ bool ElevatorFSM::stopCheck(int floor) {
     if(elevators->checkLocation(floor)) {
         return false;
     }
-    if(orders->checkOrder(BUTTON_COMMAND, floor)) {
-        return true;
-    }
+
     switch(findDirection()) {
         case DIRN_UP:
             if(orders->checkOrder(BUTTON_CALL_UP, floor)) {
