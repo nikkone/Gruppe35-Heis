@@ -36,6 +36,7 @@
     - Kommunikasjon
         - Sendmeall fiks sender ikke etter kronologisk rekkefølge/samme med backup
         - Dele opp decodeJSON()
+        - Sette decodeJSON tilbake til å ta ip fra jSON
     - OrderList
         + Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
         - Fjerne first på en eller annen måte

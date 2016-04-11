@@ -3,11 +3,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <utility> 
 
 class network {
 
-  std::vector<std::string> InnboundMessages;
-  std::map<std::string, bool> connectedPeers;
+  std::vector<std::pair<std::string, std::string>> InnboundMessages;
+  std::vector<std::pair<std::string, bool>> connectedPeers;
   int port;
   std::string ip; 
 
@@ -21,6 +22,6 @@ class network {
   public:
   	network(int port, std::string ip);
   	void send(std::string msg);
-    std::vector<std::string> get_messages();
-    std::map<std::string, bool> get_listofPeers();
+    std::vector<std::pair<std::string, std::string>> get_messages();
+    std::vector<std::pair<std::string, bool>> get_listofPeers();
 };	

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <ostream>
 #include <vector>
+#include <utility> 
 #include <map>
 
 using boost::property_tree::ptree;
@@ -56,7 +57,7 @@ std::string communication::toJSON(message_t type, std::string content){
     return json;
 }
 
-void communication::decodeJSON(std::string json){
+void communication::decodeJSON(std::string messageIP, std::string json){
     ptree pt;
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
@@ -74,7 +75,7 @@ void communication::decodeJSON(std::string json){
 
         read_json(is, pt);
 
-        std::string ip = pt.get<std::string>("ip");
+        //std::string ip = pt.get<std::string>("ip");
         message_t type = (message_t)pt.get<int>("type");
         int floor = pt.get<int>("content");
         switch(type) {
@@ -89,8 +90,8 @@ void communication::decodeJSON(std::string json){
                 fsm->buttonPressed(BUTTON_CALL_DOWN, floor);
                 break;  
             case CURRENT_LOCATION:
-                elevators->setCurrentLocation(ip, floor);
-                if( (floor == elevators->getDestination(ip)) && (floor != -1) ) {
+                elevators->setCurrentLocation(messageIP, floor);
+                if( (floor == elevators->getDestination(messageIP)) && (floor != -1) ) {
 
                     if(floor!=0) {
                         elev_set_button_lamp(BUTTON_CALL_DOWN, floor, OFF);
@@ -103,27 +104,27 @@ void communication::decodeJSON(std::string json){
                     }
                 }
                 //FOR DEBUG
-                std::cout << "Ip:" << ip << "Arrived at: " << floor << std::endl;
+                std::cout << "Ip:" << messageIP << "Arrived at: " << floor << std::endl;
                 break;
             case DESTINATION:
             //SE GJWENNOM
 //elevators->getDestination(ip);//FIX
-                if(elevators->getDestination(ip) != -1 && floor == -1) {
+                if(elevators->getDestination(messageIP) != -1 && floor == -1) {
                     
-                    if(elevators->getDestination(ip)!=0) {
-                        elev_set_button_lamp(BUTTON_CALL_DOWN, elevators->getDestination(ip), OFF);
-                        orders->remove(BUTTON_CALL_DOWN, elevators->getDestination(ip));
+                    if(elevators->getDestination(messageIP)!=0) {
+                        elev_set_button_lamp(BUTTON_CALL_DOWN, elevators->getDestination(messageIP), OFF);
+                        orders->remove(BUTTON_CALL_DOWN, elevators->getDestination(messageIP));
                     }
 
-                    if(elevators->getDestination(ip)!=N_FLOORS-1) {
-                        elev_set_button_lamp(BUTTON_CALL_UP, elevators->getDestination(ip), OFF);
-                        orders->remove(BUTTON_CALL_UP, elevators->getDestination(ip));
+                    if(elevators->getDestination(messageIP)!=N_FLOORS-1) {
+                        elev_set_button_lamp(BUTTON_CALL_UP, elevators->getDestination(messageIP), OFF);
+                        orders->remove(BUTTON_CALL_UP, elevators->getDestination(messageIP));
                     }
                     
                 }
-                elevators->setDestination(ip, floor);
+                elevators->setDestination(messageIP, floor);
                 //FOR DEBUG
-                std::cout << "Ip:" << ip << "Going to: " << floor << std::endl;
+                std::cout << "Ip:" << messageIP << "Going to: " << floor << std::endl;
                 break;
                 
             case SENDMEALL:
@@ -143,15 +144,9 @@ void communication::decodeJSON(std::string json){
     }
 }
 void communication::checkMailbox() {
-    std::vector<std::string> mail = com->get_messages();
-    for(std::vector<std::string>::iterator it = mail.begin(); it != mail.end(); it++) {
-        //std::cout << *it << std::endl;
-        decodeJSON(*it);
-        
-    }
-
-    std::map<std::string, bool> peers = com->get_listofPeers();
-    for(std::map<std::string, bool>::iterator it = peers.begin(); it != peers.end(); it++) {
+    //std::map<std::string, bool> peers = com->get_listofPeers();
+    std::vector<std::pair<std::string, bool>> peers = com->get_listofPeers();
+    for(std::vector<std::pair<std::string, bool>>::iterator it = peers.begin(); it != peers.end(); it++) {
         std::cout << it->first << "->" << it->second << std::endl;
         if(it->second) {
             elevators->addElevator(it->first);
@@ -160,6 +155,12 @@ void communication::checkMailbox() {
             elevators->removeElevator(it->first);
 
         }
+    }
+    std::vector<std::pair<std::string, std::string >> mail = com->get_messages();
+    for(std::vector<std::pair<std::string, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
+        //std::cout << *it << std::endl;
+        decodeJSON(it->first, it->second);
+        
     }
 
 }

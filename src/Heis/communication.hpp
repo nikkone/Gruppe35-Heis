@@ -15,7 +15,7 @@ class communication {
 		ElevatorMap *elevators;
 		OrderList *orders;
 		std::string ip;
-		void decodeJSON(std::string json);
+		void decodeJSON(std::string messageIP, std::string json);
 		std::string toJSON(message_t type, std::string content);
 		char* findmyip();
 	public:

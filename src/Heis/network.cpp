@@ -60,7 +60,7 @@ void network::connectionHandler(){
         }
         string s = clientSock->remote_endpoint().address().to_string();
         clientList->emplace_back(make_tuple(clientSock, time(NULL), s));
-        connectedPeers[s] = true;
+        connectedPeers.emplace_back(make_pair(s,true));
         clientList_mtx.unlock();
         cout << s << " connected sucsessfully!" << endl;
     }
@@ -78,7 +78,7 @@ void network::heartbeat(){
                 { 
                     cout << "Client dissconected" << endl;
                     string s = get<2>(clientSock);
-                    connectedPeers[s] = false;
+                    connectedPeers.emplace_back(make_pair(s,false));
                     clientList->remove(clientSock);
                     break;
                 }
@@ -136,13 +136,14 @@ void network::recieve(){
                 if(get<0>(clientSock)->available())
                 {
                     try{
+                        string ip = get<0>(clientSock)->remote_endpoint().address().to_string();
                         char readBuf[bufSize] = {0};
                         int bytesRead = get<0>(clientSock)->read_some(buffer(readBuf, bufSize));
                         string_ptr msg(new string(readBuf, bytesRead));
                         if ((msg->find("syn") == string::npos) && (msg->find("ack") == string::npos))
                         {
                             if(msg->length() > 10){
-                                InnboundMessages.push_back(*msg);
+                                InnboundMessages.push_back(make_pair(ip, *msg));
                             }
                         } else {
                             if(msg->find("syn") != string::npos)
@@ -164,7 +165,7 @@ void network::recieve(){
                                 //Guard against concocted messages
                                 if(msg->length() > 10){
                                     //cout << "syn parse" << endl;
-                                    InnboundMessages.push_back(*msg);
+                                    InnboundMessages.push_back(make_pair(ip, *msg));
                                 }
                             }
                             if(msg->find("ack") != string::npos)
@@ -177,7 +178,7 @@ void network::recieve(){
                                 get<1>(clientSock) = time(NULL);
                                 if(msg->length() > 10){
                                     //cout << "ack parse" << endl;
-                                    InnboundMessages.push_back(*msg);
+                                    InnboundMessages.push_back(make_pair(ip, *msg));
                                 }
                             }
                         }
@@ -197,15 +198,15 @@ void network::send(string msg){
     OutMessageQueue_mtx.unlock();
 }
 
-vector<string> network::get_messages(){
-      vector<string> messages = InnboundMessages;
+vector<pair<string, string>> network::get_messages(){
+      vector<pair<string, string>> messages = InnboundMessages;
       InnboundMessages = {};
       return messages;
 }
 
-map<string, bool> network::get_listofPeers(){
-      map<string, bool> peers = connectedPeers;
-      connectedPeers.clear();
+vector<pair<string, bool>>  network::get_listofPeers(){
+      vector<pair<string, bool>>  peers = connectedPeers;
+      connectedPeers = {};
       return peers;    
 }
 
@@ -243,7 +244,7 @@ void network::udpBroadcaster(){
                     sock->connect(ep);
                     clientList_mtx.lock();
                     clientList->emplace_back(make_tuple(sock, time(NULL), *msg));
-                    connectedPeers[*msg] = true;
+                    connectedPeers.emplace_back(make_pair(*msg,true));
                     clientList_mtx.unlock();
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
                 }

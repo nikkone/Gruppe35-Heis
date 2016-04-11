@@ -9,15 +9,23 @@ void ElevatorMap::addElevator(std::string ip, int location) {
 	if(elevatorMap.empty()) {
 		first = ip;
 	}
-	elevatorMap[ip] = Elevator(-1,location);
+	if(elevatorMap.find(ip) == elevatorMap.end()) {
+		ip = ip.substr(0,15);
+		std::cout << ip << " added" << std::endl;
+		elevatorMap[ip] = Elevator(-1,location);
+	}
 }
 void ElevatorMap::addElevator(std::string ip) {
 	addElevator(ip, -1);
 }
 void ElevatorMap::removeElevator(std::string ip) {
+	ip = ip.substr(0,15);
+	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
+        std::cout << it->first<<" :"<< ip.compare(it->first)<<" : "<< ip << std::endl;
+    }
 	std::cout << "Deleting ->";
 	if(elevatorMap.find(ip) != elevatorMap.end()) {
-		elevatorMap.erase(ip);
+		elevatorMap.erase(elevatorMap.find(ip));
 		std::cout << "Deleted\n";
 	}
 }
