@@ -87,10 +87,12 @@ bool ElevatorMap::shouldTakeOrder(int order) {
 	int myDistance = abs(getCurrentLocation() - order);
 	std::vector<std::string> equidistantElevators;
 	for(std::map<std::string,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
-		if(abs((it->second).currentLocation - order) < myDistance) {
-			return false;
-		} else if( abs( (it->second).currentLocation - order) == myDistance ) {
-			equidistantElevators.push_back(it->first);
+		if((it->second).currentDestination == -1) {
+			if( (abs((it->second).currentLocation - order) < myDistance) )  {
+				return false;
+			} else if( abs( (it->second).currentLocation - order) == myDistance ) {
+				equidistantElevators.push_back(it->first);
+			}
 		}
     }
     for(std::vector<std::string>::iterator it = equidistantElevators.begin(); it != equidistantElevators.end(); it++) {

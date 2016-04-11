@@ -35,6 +35,7 @@
         - Se gjennom if og while-løkkene i receive()
     - Kommunikasjon
         - Sendmeall fiks sender ikke etter kronologisk rekkefølge/samme med backup
+        - Dele opp decodeJSON()
     - OrderList
         + Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
         - Fjerne first på en eller annen måte
@@ -64,7 +65,7 @@ int main() {
     //std::system("xterm -e \"./bin/watchdog\" &");
     while(true) {
         kom.checkMailbox();
-        //Ser etter ordre, burde kanskje vert flyttet til main
+        //FLYTT PÅ KANSJKE?
         if(orders.getNextFloor(&elevators) != -1) {
             fsm.newDestination(orders.getNextFloor(&elevators));
             std::cout << "New order: "<< std::endl;
