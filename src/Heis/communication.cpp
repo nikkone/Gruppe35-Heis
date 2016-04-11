@@ -57,7 +57,7 @@ std::string communication::toJSON(message_t type, std::string content){
     return json;
 }
 
-void communication::decodeJSON(std::string messageIP, std::string json){
+void communication::decodeJSON(std::string json){
     ptree pt;
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
@@ -75,7 +75,7 @@ void communication::decodeJSON(std::string messageIP, std::string json){
 
         read_json(is, pt);
 
-        //std::string ip = pt.get<std::string>("ip");
+        std::string messageIP = pt.get<std::string>("ip");
         message_t type = (message_t)pt.get<int>("type");
         int floor = pt.get<int>("content");
         switch(type) {
@@ -159,7 +159,7 @@ void communication::checkMailbox() {
     std::vector<std::pair<std::string, std::string >> mail = com->get_messages();
     for(std::vector<std::pair<std::string, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
         //std::cout << *it << std::endl;
-        decodeJSON(it->first, it->second);
+        decodeJSON(it->second);
         
     }
 
