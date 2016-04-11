@@ -13,6 +13,7 @@ void ElevatorFSM::TimerTimedOut() {
     setState(IDLE);
 }
 void ElevatorFSM::setState(state_t nextState) {
+    //std::cout <<"changestate: " << nextState << std::endl;
     elevatorState = nextState;
     switch (nextState) {
         case IDLE:
@@ -129,7 +130,7 @@ void ElevatorFSM::floorSensorActivated(int floor) {
     }
 }
 void ElevatorFSM::newDestination(int floor) {
-    if(elevatorState == IDLE) {
+    if(elevatorState != DOOR_OPEN) {
         elevators->setDestination(floor);
         setState(MOVING);
     }

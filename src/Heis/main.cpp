@@ -69,7 +69,7 @@ int main() {
         //FLYTT PÅ KANSJKE?
         if(orders.getNextFloor(&elevators) != -1) {
             fsm.newDestination(orders.getNextFloor(&elevators));
-            std::cout << "New order: "<< std::endl;
+            //std::cout << "New order: "<< std::endl;
         }
         //Send destination
         if(previousDestination != elevators.getDestination()) {
