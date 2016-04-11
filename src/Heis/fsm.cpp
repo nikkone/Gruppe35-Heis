@@ -73,7 +73,7 @@ void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
     elev_set_button_lamp(buttonType, floor, ON);
 }
 void ElevatorFSM::stopButtonPressed(void) {
-    orders->print();
+    elevators->print();
 }
 bool ElevatorFSM::stopCheck(int floor) {
     if(orders->checkOrder(BUTTON_COMMAND, floor)) {

@@ -152,12 +152,13 @@ void communication::checkMailbox() {
 
     std::map<std::string, bool> peers = com->get_listofPeers();
     for(std::map<std::string, bool>::iterator it = peers.begin(); it != peers.end(); it++) {
-        std::cout << it->first << std::endl;
+        std::cout << it->first << "->" << it->second << std::endl;
         if(it->second) {
-            //elevators->addElevator(it->first);
+            elevators->addElevator(it->first);
             sendMail(SENDMEALL, 0);
         } else {
             elevators->removeElevator(it->first);
+
         }
     }
 
