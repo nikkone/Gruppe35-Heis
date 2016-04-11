@@ -16,11 +16,14 @@ class communication {
 		OrderList *orders;
 		std::string ip;
 		void decodeJSON(std::string json);
+		void interpretMessage(std::string messageIP, message_t messageType, int floor);
 		std::string toJSON(message_t type, std::string content);
 		char* findmyip();
 	public:
 		std::string getIP();
 		communication(ElevatorFSM *inputFsm, ElevatorMap *elevators_p, OrderList *orders_p);
+		~communication();
+
 		void checkMailbox();
 		void sendMail(message_t type, int content);
 		void sendMail(elev_button_type_t buttonType, int floor);

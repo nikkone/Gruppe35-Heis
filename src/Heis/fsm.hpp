@@ -27,7 +27,7 @@ class ElevatorFSM {
     public:
 
     	ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p);
-
+        ~ElevatorFSM();
 		void buttonPressed(elev_button_type_t buttonType, int floor);
 		void floorSensorActivated(int floor);
 

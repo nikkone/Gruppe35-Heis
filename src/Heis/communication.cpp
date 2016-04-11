@@ -45,11 +45,15 @@ communication::communication(ElevatorFSM *inputFsm, ElevatorMap *elevators_p, Or
     orders = orders_p;
 }
 
+communication::~communication() {
+    delete com;
+}
+
 std::string communication::toJSON(message_t type, std::string content){
     ptree pt;
     pt.put("ip", ip);
     pt.put("type", type);
-    pt.put("content", content);
+    pt.put("floor", content);
 
     std::ostringstream buf;
     write_json(buf, pt);
@@ -77,8 +81,13 @@ void communication::decodeJSON(std::string json){
 
         std::string messageIP = pt.get<std::string>("ip");
         message_t type = (message_t)pt.get<int>("type");
-        int floor = pt.get<int>("content");
-        switch(type) {
+        int floor = pt.get<int>("floor");
+        interpretMessage(messageIP, type, floor);
+    }
+
+}
+void communication::interpretMessage(std::string messageIP, message_t messageType, int floor) {
+        switch(messageType) {
             case COMMAND:
                 std::cout << "COMMAND" << floor << std::endl;
                 fsm->buttonPressed(BUTTON_COMMAND, floor);
@@ -140,7 +149,7 @@ void communication::decodeJSON(std::string json){
                     }
                 }
                 break;
-        }
+        
     }
 }
 void communication::checkMailbox() {

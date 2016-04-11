@@ -17,9 +17,6 @@ using namespace std;
 
 bool changed = false;
 
-// Hvordan starte ilag?
-// Kjøre system("./bin/watchdog"); i Heis?
-
 void isModified(){
   char buffer[BUF_LEN];
   changed = false;

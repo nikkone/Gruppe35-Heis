@@ -9,6 +9,9 @@ ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p) {
     setState(UNINITIALIZED);
     timer = new Timer();
 }
+ElevatorFSM::~ElevatorFSM() {
+    delete timer;
+}
 void ElevatorFSM::TimerTimedOut() {
     setState(IDLE);
 }
@@ -130,8 +133,10 @@ void ElevatorFSM::floorSensorActivated(int floor) {
     }
 }
 void ElevatorFSM::newDestination(int floor) {
-    if(elevatorState != DOOR_OPEN) {
+    if(elevatorState == IDLE) {
         elevators->setDestination(floor);
         setState(MOVING);
-    }
+    }/* else if(elevatorState == MOVING) {
+        setState(MOVING);
+    }*/
 }

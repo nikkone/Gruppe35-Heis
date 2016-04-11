@@ -13,7 +13,7 @@
         + Destinasjon
         + Lokasjon ved initialisering
         + Informasjon til nytilkoblet heis
-        ? Fikse at det noen ganger kommer to(like) heiser ved addElevator()
+        + Fikse at det noen ganger kommer to(like) heiser ved addElevator()
         + Fjerning av heiser fra listen dersom de kobles fra.
     + Kostfunksjon for flere heiser
         + Stop på veien til destinasjon kun dersom ingen andre heiser er på vei til etasjen
@@ -24,19 +24,16 @@
         + Tenke over hvilke knapper som blir lagret til backup
         + Timer som kjører backup ved jevne mellomrom
         + Fikse lesing av fil hvis fil ikke finnes
-    - Lage watchdog som gjenstarter programmet dersom det ikke responderer.
-        - Drepe programmet om det er åpent(og da ikke responderer)
-        - Restarte programmet
+    + Lage watchdog som gjenstarter programmet dersom det ikke responderer.
+        + Drepe programmet om det er åpent(og da ikke responderer)
+        + Restarte programmet
     ? Lage funksjon som oppdaterer lysene ut fra orderlist
     - Håndtering av at heisen(men ikke datamaskinen) mister strøm
-    - Bedre timer
-        - Muligens flertråds med sleep slik at det blir mer nøyaktig 3sec
     - Nettverksmodul
-        - Se gjennom if og while-løkkene i receive()
+        + Se gjennom if og while-løkkene i receive()
     - Kommunikasjon
-        - Sendmeall fiks sender ikke etter kronologisk rekkefølge/samme med backup
         - Dele opp decodeJSON()
-        - Sette decodeJSON tilbake til å ta ip fra jSON
+        + Sette decodeJSON tilbake til å ta ip fra jSON
     - OrderList
         + Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
         - Fjerne first på en eller annen måte
@@ -46,7 +43,7 @@
         - Endre navnet på funksjonene som bruker first til getMyDest osv.
         ? Endre navner på first kanskje
     - Gjøre klassene våre mer komplette
-        - Destructors hvis dynamisk alokert 
+        + Destructors hvis dynamisk alokert 
 
 */
 ///////////////////////////////////////////////////////////////////////////
@@ -66,11 +63,6 @@ int main() {
     //std::system("xterm -e \"./bin/watchdog\" &");
     while(true) {
         kom.checkMailbox();
-        //FLYTT PÅ KANSJKE?
-        if(orders.getNextFloor(&elevators) != -1) {
-            fsm.newDestination(orders.getNextFloor(&elevators));
-            //std::cout << "New order: "<< std::endl;
-        }
         //Send destination
         if(previousDestination != elevators.getDestination()) {
             previousDestination = elevators.getDestination();
@@ -87,7 +79,11 @@ int main() {
             }
             fsm.floorSensorActivated(floorSensorSignal);
         }
-
+        //FLYTT PÅ KANSJKE? FARLIG Å FLYTTE PÅ POASS PÅ
+        if(orders.getNextFloor(&elevators) != -1) {
+            fsm.newDestination(orders.getNextFloor(&elevators));
+            //std::cout << "New order: "<< std::endl;
+        }
         static bool prev[N_FLOORS][N_BUTTONS];
         for(int floor = 0; floor < N_FLOORS; floor++){
             for(int button = 0; button < N_BUTTONS; button++){
