@@ -34,6 +34,7 @@
     - Kommunikasjon
         - Dele opp decodeJSON()
         + Sette decodeJSON tilbake til å ta ip fra jSON
+        - Sjekke om ip er mindre enn 3 tall
     - OrderList
         + Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
         - Fjerne first på en eller annen måte
