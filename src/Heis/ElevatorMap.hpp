@@ -12,7 +12,7 @@ class ElevatorMap {
 	private:
 		std::map<address_v4,  Elevator> elevatorMap;
 
-		address_v4 first;//myip
+		address_v4 myIP;//myip
 
 	public:
 	ElevatorMap();
@@ -27,10 +27,6 @@ class ElevatorMap {
 	bool checkDestination(int floor);
 	bool shouldTakeOrder(int order);
 
-	//int getCurrentLocation();
-	//void setDestination(int destination);
-	//void setCurrentLocation(int location);
-	//int getDestination();
 	//DEBUG
 	void print();
 };

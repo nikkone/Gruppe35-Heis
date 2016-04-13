@@ -38,6 +38,7 @@ messageQueue_ptr OutMessageQueue(new queue<string>);
 Skille recieve og send ack/syn
 udpBrodcaster dele opp (udpListener)
 kalle udpBroadcaster hvert nte sek
+Sender emptyspace ved ack/syn fikse
 
 */
 

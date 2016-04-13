@@ -64,8 +64,8 @@ std::tuple<address_v4, message_t, int> communication::decodeJSON(std::string jso
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
     if (first == std::string::npos) {
-        std::cout << "{ not found!" << std::endl;
-        std::cout << json << std::endl;
+        //std::cout << "{ not found!" << std::endl;
+        //std::cout << json << std::endl;
     } else if (last == std::string::npos) {
         std::cout << "} not found!" << std::endl;
     } else if (last < first) {
