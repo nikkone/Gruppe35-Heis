@@ -39,36 +39,43 @@ void ElevatorMap::setCurrentLocation(address_v4 ip, int location) {
 		elevatorMap[ip].currentLocation = location;
 	}
 }
+/*
 void ElevatorMap::setCurrentLocation(int location) {
 	setCurrentLocation(first, location);
 }
+*/
 void ElevatorMap::setDestination(address_v4 ip, int destination) {
 	if(elevatorMap.find(ip) != elevatorMap.end()) {
 		elevatorMap[ip].destination = destination;
 	}
 }
+/*
 void ElevatorMap::setDestination(int destination) {
 	setDestination(first, destination);
 }
+*/
 int ElevatorMap::getCurrentLocation(address_v4 ip) {
 	if(elevatorMap.find(ip) != elevatorMap.end()) {
 		return elevatorMap[ip].currentLocation;
 	}
 	return -1;
 }
+/*
 int ElevatorMap::getCurrentLocation() {
 	return getCurrentLocation(first);
 }
-
+*/
 int ElevatorMap::getDestination(address_v4 ip) {
 	if(elevatorMap.find(ip) != elevatorMap.end()) {
 		return elevatorMap[ip].destination;
 	}
 	return -1;
 }
+/*
 int ElevatorMap::getDestination() {
 	return getDestination(first);
 }
+*/
 bool ElevatorMap::checkDestination(int floor) {
 	for(std::map<address_v4,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
 		if((it->second).destination == floor) {
@@ -88,7 +95,7 @@ bool ElevatorMap::checkLocation(int floor) {
     return false;
 }
 bool ElevatorMap::shouldTakeOrder(int order) {
-	int myDistance = abs(getCurrentLocation() - order);
+	int myDistance = abs(getCurrentLocation(first) - order);
 	std::vector<address_v4> equidistantElevators;
 	for(std::map<address_v4,  Elevator>::iterator it = elevatorMap.begin(); it != elevatorMap.end(); it++) {
 		if((it->second).destination == -1) {

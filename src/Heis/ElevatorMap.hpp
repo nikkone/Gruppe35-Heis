@@ -12,25 +12,25 @@ class ElevatorMap {
 	private:
 		std::map<address_v4,  Elevator> elevatorMap;
 
-		address_v4 first;
+		address_v4 first;//myip
 
 	public:
 	ElevatorMap();
-	void addElevator(address_v4 ip, int location);
+	void addElevator(address_v4 ip, int location);//Blir aldri brukt
 	void addElevator(address_v4 ip);
 	void removeElevator(address_v4 ip);
 	void setDestination(address_v4 ip, int destination);
-	void setDestination(int destination);
 	void setCurrentLocation(address_v4 ip, int location);
-	void setCurrentLocation(int location);
 	int getDestination(address_v4 ip);
-	int getDestination();
 	int getCurrentLocation(address_v4 ip);
-	int getCurrentLocation();
-	bool checkDestination(int floor);
 	bool checkLocation(int floor);
-	//bool isNearest(int targetFloor);
+	bool checkDestination(int floor);
 	bool shouldTakeOrder(int order);
+
+	//int getCurrentLocation();
+	//void setDestination(int destination);
+	//void setCurrentLocation(int location);
+	//int getDestination();
 	//DEBUG
 	void print();
 };

@@ -30,7 +30,7 @@ using boost::asio::ip::address_v4;
         + Drepe programmet om det er åpent(og da ikke responderer)
         + Restarte programmet
     ? Lage funksjon som oppdaterer lysene ut fra orderlist
-    - Håndtering av at heisen(men ikke datamaskinen) mister strøm
+    + Håndtering av at heisen(men ikke datamaskinen) mister strøm
     + Nettverksmodul
         + Se gjennom if og while-løkkene i receive()
         + Mutex rundt get rutinene?
@@ -39,7 +39,7 @@ using boost::asio::ip::address_v4;
         + Dele opp decodeJSON()
         + Sette decodeJSON tilbake til å ta ip fra jSON
         + Sjekke om ip er mindre enn 3 tall
-        - Dele opp checkMailboks?
+        + Dele opp checkMailboks
         - Sendmeall kun til den første som heisen kobler seg til?
         - Svare på Sendmeall kun til den som spør? IKKE VIKTIG
     - OrderList
@@ -56,6 +56,7 @@ using boost::asio::ip::address_v4;
         + Endre IPer til adress_v4 i boost biblioteket OVERALT
         - Flytte includes som ikke er brukt i headeren over i cpp filene
         - Hive inn noen std::cerr der exeptions blir kalt.
+        - Sjekke hvilke moduler som inkluderer hverandre
 
 */
 ///////////////////////////////////////////////////////////////////////////
@@ -66,21 +67,21 @@ int main() {
     OrderList orders;
     ElevatorMap elevators;
     Timer* motorTimer = new Timer();
-    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, motorTimer);
-    communication kom = communication(&fsm, &elevators, &orders);
-    elevators.addElevator(kom.getIP(), 0);
+    communication kom = communication(&elevators, &orders);
+    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, motorTimer, &kom);
+    elevators.addElevator(kom.getMyIP(), 0);
     Backup backup("backup.txt", &fsm);//skift til .json?
     backup.restore(&orders);
     Timer* backupTimer = new Timer();//Endre til ikke dynamisk alokert
     backupTimer->set(backupInterval);
     int previousFloorSensor = -1;
     int previousDestination= -1;
-    //std::system("xterm -e \"./bin/watchdog\" &");
     while(true) {
-        kom.checkMailbox();
+        fsm.newMail(kom.checkMailbox());
+        kom.updateElevatorMap();
         //Send destination
-        if(previousDestination != elevators.getDestination()) {
-            previousDestination = elevators.getDestination();
+        if(previousDestination != elevators.getDestination(kom.getMyIP())) {
+            previousDestination = elevators.getDestination(kom.getMyIP());
             std::cout << "Sending destination: " << previousDestination << std::endl;
             kom.sendMail(DESTINATION, previousDestination);
         }
@@ -89,7 +90,7 @@ int main() {
         if(floorSensorSignal != -1) {
             if(floorSensorSignal != previousFloorSensor) {
                 kom.sendMail(CURRENT_LOCATION, floorSensorSignal);
-                std::cout << "Sending location: " << floorSensorSignal << std::endl;//Fiks slik at dette skjer i starten også, tror fikset?
+                std::cout << "Sending location: " << floorSensorSignal << std::endl;
                 previousFloorSensor = floorSensorSignal;//Sjekk legginn i if setning???????????    
             }
             fsm.floorSensorActivated(floorSensorSignal);
