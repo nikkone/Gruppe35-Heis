@@ -31,10 +31,15 @@
     - Håndtering av at heisen(men ikke datamaskinen) mister strøm
     - Nettverksmodul
         + Se gjennom if og while-løkkene i receive()
+        ? Mutex rundt get rutinene?
+        -Bedre navn på respond, sendToAll eller noe sånt?
     - Kommunikasjon
         - Dele opp decodeJSON()
         + Sette decodeJSON tilbake til å ta ip fra jSON
         - Sjekke om ip er mindre enn 3 tall
+        - Dele opp checkMailboks?
+        - Sendmeall kun til den første som heisen kobler seg til?
+        - Svare på Sendmeall kun til den som spør? IKKE VIKTIG
     - OrderList
         + Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
         - Fjerne first på en eller annen måte
@@ -45,6 +50,10 @@
         ? Endre navner på first kanskje
     - Gjøre klassene våre mer komplette
         + Destructors hvis dynamisk alokert 
+    - Overalt
+        ! Endre IPer til adress_v4 i boost biblioteket OVERALT
+        - Flytte includes som ikke er brukt i headeren over i cpp filene
+        - Hive inn noen std::cerr der exeptions blir kalt.
 
 */
 ///////////////////////////////////////////////////////////////////////////

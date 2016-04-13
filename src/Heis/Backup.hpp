@@ -14,11 +14,12 @@ using boost::property_tree::write_json;
 class Backup {
 	private:
 		std::string backupFile;
+		ElevatorFSM *fsm;
 		void writeStringToFile(std::string str);
 		std::string readStringFromFile();
 		void decodeJSON(std::string json);
 		std::string toJSON(elev_button_type_t type, int floor);
-		ElevatorFSM *fsm;
+
 	public:
 		Backup(std::string filename, ElevatorFSM *fsm_p);
 		void restore(OrderList *orders);

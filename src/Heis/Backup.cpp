@@ -44,7 +44,7 @@ void Backup::make(OrderList *orders) {
 std::string Backup::toJSON(elev_button_type_t type, int floor){
     ptree pt;
     pt.put("type", type);
-    pt.put("content", floor);
+    pt.put("floor", floor);
 
     std::ostringstream buf;
     write_json(buf, pt);
@@ -67,7 +67,7 @@ void Backup::decodeJSON(std::string json){
         std::istringstream is(json);
         read_json(is, pt);
         elev_button_type_t type = (elev_button_type_t)pt.get<int>("type");
-        int floor = pt.get<int>("content");
+        int floor = pt.get<int>("floor");
         fsm->buttonPressed(type, floor);
     }
 }

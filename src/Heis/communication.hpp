@@ -17,7 +17,7 @@ class communication {
 		std::string ip;
 		void decodeJSON(std::string json);
 		void interpretMessage(std::string messageIP, message_t messageType, int floor);
-		std::string toJSON(message_t type, std::string content);
+		std::string toJSON(message_t type, int floor);
 		char* findmyip();
 	public:
 		std::string getIP();
@@ -25,6 +25,6 @@ class communication {
 		~communication();
 
 		void checkMailbox();
-		void sendMail(message_t type, int content);
+		void sendMail(message_t type, int floor);
 		void sendMail(elev_button_type_t buttonType, int floor);
 };

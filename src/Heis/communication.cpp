@@ -49,15 +49,15 @@ communication::~communication() {
     delete com;
 }
 
-std::string communication::toJSON(message_t type, std::string content){
+std::string communication::toJSON(message_t type, int floor){
     ptree pt;
     pt.put("ip", ip);
     pt.put("type", type);
-    pt.put("floor", content);
+    pt.put("floor", floor);//Trenger kanskje toString eller noe sånt?
 
     std::ostringstream buf;
     write_json(buf, pt);
-    std::string json = buf.str();
+    std::string json = buf.str();//kan kanskje returneres direkte?
     return json;
 }
 
@@ -141,8 +141,8 @@ void communication::interpretMessage(std::string messageIP, message_t messageTyp
                 sendMail(DESTINATION, elevators->getDestination());
                 for(int floor = 0; floor < N_FLOORS; floor++){
                     for(int button = 0; button < N_BUTTONS-1; button++){
-                        if(button==1 && floor==0) continue; //Hindrer sjekking av ned i nedre etasje
-                        if(button==0 && floor==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasj
+                        if(button==BUTTON_CALL_DOWN && floor==0) continue;
+                        if(button==BUTTON_CALL_UP && floor==N_FLOORS-1) continue;
                         if(orders->checkOrder((elev_button_type_t)button, floor)) {
                             sendMail((elev_button_type_t)button, floor);
                         }
@@ -173,9 +173,9 @@ void communication::checkMailbox() {
     }
 
 }
-void communication::sendMail(message_t type, int content) {
-    std::cout << content << std::endl;
-    com->send(toJSON(type, std::to_string(content)));
+void communication::sendMail(message_t type, int floor) {
+    //std::cout << content << std::endl;
+    com->send(toJSON(type, floor));
 }
 void communication::sendMail(elev_button_type_t buttonType, int floor) {
     switch(buttonType) {
