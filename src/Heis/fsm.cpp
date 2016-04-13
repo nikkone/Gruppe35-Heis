@@ -3,9 +3,10 @@
 //for cout
 #include <iostream>
 
-ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p) {
+ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p) {
     elevators = elevatorMap_p;
 	orders = orderList_p;
+    motorTimer = motorTimer_p;
     setState(UNINITIALIZED);
     timer = new Timer();
 }
@@ -26,10 +27,12 @@ void ElevatorFSM::setState(state_t nextState) {
         case MOVING:
             elev_set_door_open_lamp(OFF);
             elev_set_motor_direction(findDirection());
+            motorTimer->set(5);
             break;
         case DOOR_OPEN:
             elev_set_motor_direction(DIRN_STOP);
             elev_set_door_open_lamp(ON);
+            motorTimer->reset();
             elevators->setDestination(-1);
             timer->set(2);
             break;
@@ -114,7 +117,9 @@ bool ElevatorFSM::stopCheck(int floor) {
     return false;
 }
 void ElevatorFSM::floorSensorActivated(int floor) {
-
+    if((elevatorState == MOVING) && (floor != elevators->getCurrentLocation())) {
+        motorTimer->set(5);
+    }
     if((floor != elevators->getCurrentLocation()) || (floor == elevators->getDestination())) {
         elevators->setCurrentLocation(floor);
     	elev_set_floor_indicator(floor);
@@ -126,7 +131,6 @@ void ElevatorFSM::floorSensorActivated(int floor) {
         	resetFloorLights(floor);
         }
     }
-
     //Poll timer, bør kun gjøres i state DOOR_OPEN
     if(timer->check()) {
         TimerTimedOut();

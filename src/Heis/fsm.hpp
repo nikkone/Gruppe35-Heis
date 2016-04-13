@@ -17,6 +17,7 @@ class ElevatorFSM {
     private:
     	OrderList* orders;
     	Timer* timer;
+        Timer* motorTimer;
     	state_t elevatorState;
         ElevatorMap* elevators;
     	void setState(state_t nextState);
@@ -26,7 +27,7 @@ class ElevatorFSM {
 		bool stopCheck(int floor);
     public:
 
-    	ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p);
+    	ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p);
         ~ElevatorFSM();
 		void buttonPressed(elev_button_type_t buttonType, int floor);
 		void floorSensorActivated(int floor);

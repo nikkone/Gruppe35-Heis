@@ -34,12 +34,12 @@ char* communication::findmyip() {
         }
     return p;
 }
-std::string communication::getIP() {
+address_v4 communication::getIP() {
     return ip;
 }
 communication::communication(ElevatorFSM *inputFsm, ElevatorMap *elevators_p, OrderList *orders_p) {
-    ip = findmyip();
-    com = new network(8001, ip);
+    ip = address_v4::from_string(findmyip());
+    com = new network(8001, ip);//MÅFIKSES
     fsm = inputFsm;
     elevators = elevators_p;
     orders = orders_p;
@@ -79,14 +79,14 @@ void communication::decodeJSON(std::string json){
 
         read_json(is, pt);
 
-        std::string messageIP = pt.get<std::string>("ip");
+        address_v4 messageIP = address_v4::from_string(pt.get<std::string>("ip"));//Kan kanskje forenkles
         message_t type = (message_t)pt.get<int>("type");
         int floor = pt.get<int>("floor");
         interpretMessage(messageIP, type, floor);
     }
 
 }
-void communication::interpretMessage(std::string messageIP, message_t messageType, int floor) {
+void communication::interpretMessage(address_v4 messageIP, message_t messageType, int floor) {
         switch(messageType) {
             case COMMAND:
                 std::cout << "COMMAND" << floor << std::endl;
@@ -154,8 +154,8 @@ void communication::interpretMessage(std::string messageIP, message_t messageTyp
 }
 void communication::checkMailbox() {
     //std::map<std::string, bool> peers = com->get_listofPeers();
-    std::vector<std::pair<std::string, bool>> peers = com->get_listofPeers();
-    for(std::vector<std::pair<std::string, bool>>::iterator it = peers.begin(); it != peers.end(); it++) {
+    std::vector<std::pair<address_v4, bool>> peers = com->get_listofPeers();
+    for(std::vector<std::pair<address_v4, bool>>::iterator it = peers.begin(); it != peers.end(); it++) {
         std::cout << it->first << "->" << it->second << std::endl;
         if(it->second) {
             elevators->addElevator(it->first);
@@ -165,8 +165,8 @@ void communication::checkMailbox() {
 
         }
     }
-    std::vector<std::pair<std::string, std::string >> mail = com->get_messages();
-    for(std::vector<std::pair<std::string, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
+    std::vector<std::pair<address_v4, std::string >> mail = com->get_messages();
+    for(std::vector<std::pair<address_v4, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
         //std::cout << *it << std::endl;
         decodeJSON(it->second);
         

@@ -14,10 +14,11 @@
 using namespace std;
 using namespace boost::asio;
 using namespace boost::asio::ip;
+using boost::asio::ip::address_v4;
 
 typedef boost::shared_ptr<tcp::socket> socket_ptr;
 typedef boost::shared_ptr<string> string_ptr;
-typedef boost::shared_ptr< list< tuple< socket_ptr, time_t, string > > > clientList_ptr;
+typedef boost::shared_ptr< list< tuple< socket_ptr, time_t, address_v4 > > > clientList_ptr;
 typedef boost::shared_ptr< queue<string> > messageQueue_ptr;
 
 const int bufSize = 128; 
@@ -26,17 +27,28 @@ const double heartbeat_time = 3; //Acceptable waiting time?
 io_service service;
 boost::mutex OutMessageQueue_mtx;
 boost::mutex clientList_mtx;
-clientList_ptr clientList(new list< tuple< socket_ptr, time_t, string > >);
+boost::mutex innboundMessages_mtx;
+boost::mutex connectedPeers_mtx;
+clientList_ptr clientList(new list< tuple< socket_ptr, time_t, address_v4 > >);
 messageQueue_ptr OutMessageQueue(new queue<string>);
 
 
-network::network(int port, string ip) : port(port), ip(ip)
+/*
+
+Skille recieve og send ack/syn
+udpBrodcaster dele opp (udpListener)
+kalle udpBroadcaster hvert nte sek
+
+*/
+
+
+network::network(int port, address_v4 ip) : port(port), ip(ip)
 {
     new boost::thread(bind(&network::connectionHandler, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
     new boost::thread(bind(&network::recieve, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
-    new boost::thread(bind(&network::respond, this));
+    new boost::thread(bind(&network::tcpMessageBroadcaster, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));        
     new boost::thread(bind(&network::udpBroadcaster, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
@@ -54,14 +66,16 @@ void network::connectionHandler(){
         clientList_mtx.lock();
         for(auto& sock : *clientList)
         {
-            if(get<2>(sock) == clientSock->remote_endpoint().address().to_string())
+            if(get<2>(sock) == clientSock->remote_endpoint().address().to_v4())
                 return; 
 
         }
-        string s = clientSock->remote_endpoint().address().to_string();
+        address_v4 s = clientSock->remote_endpoint().address().to_v4();
         clientList->emplace_back(make_tuple(clientSock, time(NULL), s));
-        connectedPeers.emplace_back(make_pair(s,true));
         clientList_mtx.unlock();
+        connectedPeers_mtx.lock();
+        connectedPeers.emplace_back(make_pair(s,true));
+        connectedPeers_mtx.unlock();
         cout << s << " connected sucsessfully!" << endl;
     }
 }
@@ -77,8 +91,10 @@ void network::heartbeat(){
                 if(seconds >= heartbeat_time)
                 { 
                     cout << "Client dissconected" << endl;
-                    string s = get<2>(clientSock);
+                    address_v4 s = get<2>(clientSock);
+                    connectedPeers_mtx.lock();
                     connectedPeers.emplace_back(make_pair(s,false));
+                    connectedPeers_mtx.unlock();
                     clientList->remove(clientSock);
                     break;
                 }
@@ -99,7 +115,7 @@ void network::heartbeat(){
     }
 }
 
-void network::respond(){
+void network::tcpMessageBroadcaster(){
     while(true)
     {
         if(!OutMessageQueue->empty())
@@ -136,15 +152,15 @@ void network::recieve(){
                 if(get<0>(clientSock)->available())
                 {
                     try{
-                        string ip = get<0>(clientSock)->remote_endpoint().address().to_string();
+                        address_v4 ip = get<0>(clientSock)->remote_endpoint().address().to_v4();
                         char readBuf[bufSize] = {0};
                         int bytesRead = get<0>(clientSock)->read_some(buffer(readBuf, bufSize));
                         string_ptr msg(new string(readBuf, bytesRead));
                         if ((msg->find("syn") == string::npos) && (msg->find("ack") == string::npos))
                         {
-                            if(msg->length() > 10){
-                                InnboundMessages.push_back(make_pair(ip, *msg));
-                            }
+                            innboundMessages_mtx.lock();
+                            InnboundMessages.push_back(make_pair(ip, *msg));
+                            innboundMessages_mtx.unlock();
                         } else {
                             if(msg->find("syn") != string::npos)
                             {
@@ -163,10 +179,10 @@ void network::recieve(){
                                 }
                                 catch(exception& e){}
                                 //Guard against concocted messages
-                                if(msg->length() > 10){
                                     //cout << "syn parse" << endl;
-                                    InnboundMessages.push_back(make_pair(ip, *msg));
-                                }
+                                innboundMessages_mtx.lock();
+                                InnboundMessages.push_back(make_pair(ip, *msg));
+                                innboundMessages_mtx.unlock();
                             }
                             if(msg->find("ack") != string::npos)
                             {
@@ -176,10 +192,10 @@ void network::recieve(){
                                     msg->erase(msg->find("ack"),3);
                                 } while(msg->find("ack") != string::npos);
                                 get<1>(clientSock) = time(NULL);
-                                if(msg->length() > 10){
-                                    //cout << "ack parse" << endl;
-                                    InnboundMessages.push_back(make_pair(ip, *msg));
-                                }
+                                //cout << "ack parse" << endl;
+                                innboundMessages_mtx.lock();
+                                InnboundMessages.push_back(make_pair(ip, *msg));
+                                innboundMessages_mtx.unlock();
                             }
                         }
                     }
@@ -198,16 +214,20 @@ void network::send(string msg){
     OutMessageQueue_mtx.unlock();
 }
 
-vector<pair<string, string>> network::get_messages(){
-      vector<pair<string, string>> messages = InnboundMessages;
-      InnboundMessages = {};
-      return messages;
+vector<pair<address_v4, string>> network::get_messages(){
+    innboundMessages_mtx.lock();
+    vector<pair<address_v4, string>> messages = InnboundMessages;
+    InnboundMessages = {};
+    innboundMessages_mtx.unlock();
+    return messages;
 }
 
-vector<pair<string, bool>>  network::get_listofPeers(){
-      vector<pair<string, bool>>  peers = connectedPeers;
-      connectedPeers = {};
-      return peers;    
+vector<pair<address_v4, bool>>  network::get_listofPeers(){
+    connectedPeers_mtx.lock();
+    vector<pair<address_v4, bool>>  peers = connectedPeers;
+    connectedPeers_mtx.unlock();
+    connectedPeers = {};
+    return peers;    
 }
 
 
@@ -218,7 +238,7 @@ void network::udpBroadcaster(){
     socket.set_option(socket_base::broadcast(true));
     udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
     char data[bufSize];
-    strcpy(data, ip.c_str());
+    strcpy(data, (ip.to_string()).c_str());
     socket.send_to(buffer(data), broadcast_endpoint);
     //Listen for incomming broadcast
     udp::socket recieveSocket(io_service, udp::endpoint(udp::v4(), 8888 ));
@@ -233,7 +253,7 @@ void network::udpBroadcaster(){
         {
             for(auto& sock : *clientList)
             {
-                if(get<2>(sock) == *msg) 
+                if(get<2>(sock) == address_v4::from_string(*msg)) 
                     allreadyConnected = true; 
             }
             if(!allreadyConnected){
@@ -243,9 +263,11 @@ void network::udpBroadcaster(){
                     socket_ptr sock(new tcp::socket(service));
                     sock->connect(ep);
                     clientList_mtx.lock();
-                    clientList->emplace_back(make_tuple(sock, time(NULL), *msg));
-                    connectedPeers.emplace_back(make_pair(*msg,true));
+                    clientList->emplace_back(make_tuple(sock, time(NULL), address_v4::from_string(*msg)));
                     clientList_mtx.unlock();
+                    connectedPeers_mtx.lock();
+                    connectedPeers.emplace_back(make_pair(address_v4::from_string(*msg),true));
+                    connectedPeers_mtx.unlock();
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
                 }
                 catch(exception& e){}

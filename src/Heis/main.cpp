@@ -1,12 +1,14 @@
+#include <unistd.h>
+#include <iostream>
+#include <boost/asio/ip/address_v4.hpp>
 
 #include "elev.h"
 #include "OrderList.hpp"
 #include "fsm.hpp"
 #include "communication.hpp"
 #include "ElevatorMap.hpp"
-#include <unistd.h>
-#include <iostream>
 #include "Backup.hpp"
+using boost::asio::ip::address_v4;
 ////////////////////////////      TODO       ///////////////////////////////
 /*
     + LEGGE ALLE ENDRINGER UT PÅ NETTET OG LEGGE DEM INN LOKALT
@@ -29,14 +31,14 @@
         + Restarte programmet
     ? Lage funksjon som oppdaterer lysene ut fra orderlist
     - Håndtering av at heisen(men ikke datamaskinen) mister strøm
-    - Nettverksmodul
+    + Nettverksmodul
         + Se gjennom if og while-løkkene i receive()
-        ? Mutex rundt get rutinene?
-        -Bedre navn på respond, sendToAll eller noe sånt?
+        + Mutex rundt get rutinene?
+        + Bedre navn på respond, sendToAll eller noe sånt?
     - Kommunikasjon
-        - Dele opp decodeJSON()
+        + Dele opp decodeJSON()
         + Sette decodeJSON tilbake til å ta ip fra jSON
-        - Sjekke om ip er mindre enn 3 tall
+        + Sjekke om ip er mindre enn 3 tall
         - Dele opp checkMailboks?
         - Sendmeall kun til den første som heisen kobler seg til?
         - Svare på Sendmeall kun til den som spør? IKKE VIKTIG
@@ -51,22 +53,25 @@
     - Gjøre klassene våre mer komplette
         + Destructors hvis dynamisk alokert 
     - Overalt
-        ! Endre IPer til adress_v4 i boost biblioteket OVERALT
+        + Endre IPer til adress_v4 i boost biblioteket OVERALT
         - Flytte includes som ikke er brukt i headeren over i cpp filene
         - Hive inn noen std::cerr der exeptions blir kalt.
 
 */
 ///////////////////////////////////////////////////////////////////////////
+
+
 const int backupInterval = 1;//seconds
 int main() {
     OrderList orders;
     ElevatorMap elevators;
-    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators);
+    Timer* motorTimer = new Timer();
+    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, motorTimer);
     communication kom = communication(&fsm, &elevators, &orders);
     elevators.addElevator(kom.getIP(), 0);
     Backup backup("backup.txt", &fsm);//skift til .json?
     backup.restore(&orders);
-    Timer *backupTimer = new Timer();//Endre til ikke dynamisk alokert
+    Timer* backupTimer = new Timer();//Endre til ikke dynamisk alokert
     backupTimer->set(backupInterval);
     int previousFloorSensor = -1;
     int previousDestination= -1;
@@ -120,6 +125,9 @@ int main() {
         if(backupTimer->check()) {
             backup.make(&orders);
             backupTimer->set(backupInterval);
+        }
+        if(motorTimer->check()) {
+            return 1;
         }
         usleep(100000);
     }

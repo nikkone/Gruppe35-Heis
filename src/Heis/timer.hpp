@@ -6,5 +6,6 @@ class Timer {
     public:
         Timer();
         void set(int seconds);
+        void reset();
         int check();
 };

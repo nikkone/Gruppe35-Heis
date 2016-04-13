@@ -4,22 +4,28 @@
 #include <string>
 // FOR DEBUGGING
 #include <iostream>
+
+#include <boost/asio/ip/address_v4.hpp>
+using boost::asio::ip::address_v4;
+
 class ElevatorMap {
 	private:
-		std::map<std::string,  Elevator> elevatorMap;
-		std::string first;
+		std::map<address_v4,  Elevator> elevatorMap;
+
+		address_v4 first;
+
 	public:
 	ElevatorMap();
-	void addElevator(std::string, int location);
-	void addElevator(std::string);
-	void removeElevator(std::string ip);
-	void setDestination(std::string ip, int destination);
+	void addElevator(address_v4 ip, int location);
+	void addElevator(address_v4 ip);
+	void removeElevator(address_v4 ip);
+	void setDestination(address_v4 ip, int destination);
 	void setDestination(int destination);
-	void setCurrentLocation(std::string ip, int location);
+	void setCurrentLocation(address_v4 ip, int location);
 	void setCurrentLocation(int location);
-	int getDestination(std::string ip);
+	int getDestination(address_v4 ip);
 	int getDestination();
-	int getCurrentLocation(std::string ip);
+	int getCurrentLocation(address_v4 ip);
 	int getCurrentLocation();
 	bool checkDestination(int floor);
 	bool checkLocation(int floor);

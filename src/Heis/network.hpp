@@ -5,23 +5,26 @@
 #include <map>
 #include <utility> 
 
+
+#include <boost/asio/ip/address_v4.hpp>
+using boost::asio::ip::address_v4;
 class network {
 
-  std::vector<std::pair<std::string, std::string>> InnboundMessages;
-  std::vector<std::pair<std::string, bool>> connectedPeers;
+  std::vector<std::pair<address_v4, std::string>> InnboundMessages;
+  std::vector<std::pair<address_v4, bool>> connectedPeers;
   int port;
-  std::string ip; 
+  address_v4 ip; 
 
   private:
   	void connectionHandler();
     void heartbeat();
-  	void respond();
+  	void tcpMessageBroadcaster();
    	void recieve();
     void udpBroadcaster();
 
   public:
-  	network(int port, std::string ip);
+  	network(int port, address_v4 ip);
   	void send(std::string msg);
-    std::vector<std::pair<std::string, std::string>> get_messages();
-    std::vector<std::pair<std::string, bool>> get_listofPeers();
+    std::vector<std::pair<address_v4, std::string>> get_messages();
+    std::vector<std::pair<address_v4, bool>> get_listofPeers();
 };	
