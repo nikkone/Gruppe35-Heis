@@ -44,12 +44,10 @@ using boost::asio::ip::address_v4;
         - Svare på Sendmeall kun til den som spør? IKKE VIKTIG
     - OrderList
         + Skifte navn på exists til isButtonOrdered eller noe mer beskrivende
-        - Fjerne first på en eller annen måte
     - ElevatorFSM
         + Endre navn på staten RUNNING til MOVING eller noe sånt(Tips fra Anders)
     - ElevatorMap
-        - Endre navnet på funksjonene som bruker first til getMyDest osv.
-        ? Endre navner på first kanskje
+        - Fjerne myIP på en eller annen måte
     - Gjøre klassene våre mer komplette
         + Destructors hvis dynamisk alokert 
     - Overalt
@@ -96,8 +94,8 @@ int main() {
             fsm.floorSensorActivated(floorSensorSignal);
         }
         //FLYTT PÅ KANSJKE? FARLIG Å FLYTTE PÅ POASS PÅ
-        if(orders.getNextFloor(&elevators) != -1) {
-            fsm.newDestination(orders.getNextFloor(&elevators));
+        if(orders.getNextFloor(kom.getMyIP(), &elevators) != -1) {
+            fsm.newDestination(orders.getNextFloor(kom.getMyIP(), &elevators));
             //std::cout << "New order: "<< std::endl;
         }
         static bool prev[N_FLOORS][N_BUTTONS];

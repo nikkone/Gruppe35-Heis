@@ -96,7 +96,7 @@ bool ElevatorFSM::stopCheck(int floor) {
         return false;
     }
     //Sjekker om andre heiser er i etasjen
-    if(elevators->checkLocation(floor)) {
+    if(elevators->checkLocation(com->getMyIP(), floor)) {
         return false;
     }
 

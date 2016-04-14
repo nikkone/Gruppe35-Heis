@@ -247,20 +247,20 @@ void network::udpListener(){
                 }
             }
             if(!allreadyConnected){
+                clientList_mtx.lock();
+                connectedPeers_mtx.lock();
                 try
                 {
                     tcp::endpoint ep(address::from_string(*msg), port);
                     socket_ptr sock(new tcp::socket(service));
                     sock->connect(ep);
-                    clientList_mtx.lock();
                     clientList->emplace_back(make_tuple(sock, time(NULL), address_v4::from_string(*msg)));
-                    clientList_mtx.unlock();
-                    connectedPeers_mtx.lock();
                     connectedPeers.emplace_back(make_pair(address_v4::from_string(*msg),true));
-                    connectedPeers_mtx.unlock();
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
                 }
                 catch(...){cerr << "Could not connect to socket" << endl;}
+                clientList_mtx.unlock();
+                connectedPeers_mtx.unlock();
             }
         }
     }
