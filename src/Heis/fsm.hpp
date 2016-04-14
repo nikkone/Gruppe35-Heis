@@ -29,10 +29,10 @@ class ElevatorFSM {
 
     	void setState(state_t nextState);
     	void resetFloorLights(int floor);
-    	elev_motor_direction_t findDirection();
+    	elev_motor_direction_t findDirection() const;
     	void TimerTimedOut();
 		bool stopCheck(int floor);
-        void interpretMessage(address_v4 messageIP, message_t messageType, int floor);
+        void interpretMessage(const address_v4 &messageIP, message_t messageType, int floor);
 
     public:
 
@@ -42,5 +42,5 @@ class ElevatorFSM {
 		void floorSensorActivated(int floor);
 		void stopButtonPressed(void);// FOR DEBUG
         void newDestination(int floor);
-        void newMail(std::vector<std::tuple<address_v4, message_t, int>>);
+        void newMail(const std::vector<std::tuple<address_v4, message_t, int>> &mail);
 };

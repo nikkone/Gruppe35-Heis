@@ -23,5 +23,5 @@ class Backup {
 	public:
 		Backup(std::string filename, ElevatorFSM *fsm_p);
 		void restore(OrderList *orders);
-		void make(OrderList *orders);
+		void make(const OrderList &orders);
 };

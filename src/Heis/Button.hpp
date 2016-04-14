@@ -7,7 +7,7 @@ class Button {
         int buttonFloor;
     public:
         Button(elev_button_type_t type, int floor);
-        int getFloor();
-        elev_button_type_t getType();
+        int getFloor() const;
+        elev_button_type_t getType() const;
         friend std::ostream &operator<<( std::ostream &output, const Button &Button_ref );
 };

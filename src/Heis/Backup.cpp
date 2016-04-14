@@ -39,10 +39,10 @@ void Backup::restore(OrderList *orders) {
         last = str.find('}');
     }
 }
-void Backup::make(OrderList *orders) {
+void Backup::make(const OrderList &orders) {
 	std::string output;
     for(int floor = 0; floor < N_FLOORS; floor++){
-        if(orders->checkOrder(BUTTON_COMMAND, floor)) {
+        if(orders.checkOrder(BUTTON_COMMAND, floor)) {
             output += toJSON(BUTTON_COMMAND, floor);
         }
     }

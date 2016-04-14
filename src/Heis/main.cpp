@@ -95,8 +95,8 @@ int main() {
             fsm.floorSensorActivated(floorSensorSignal);
         }
         //FLYTT PÅ KANSJKE? FARLIG Å FLYTTE PÅ POASS PÅ
-        if(orders.getNextFloor(kom.getMyIP(), &elevators) != -1) {
-            fsm.newDestination(orders.getNextFloor(kom.getMyIP(), &elevators));
+        if(orders.getNextFloor(kom.getMyIP(), elevators) != -1) {
+            fsm.newDestination(orders.getNextFloor(kom.getMyIP(), elevators));
             //std::cout << "New order: "<< std::endl;
         }
         static bool prev[N_FLOORS][N_BUTTONS];
@@ -123,7 +123,7 @@ int main() {
         }
         //END DEBUG
         if(backupTimer.check()) {
-            backup.make(&orders);
+            backup.make(orders);
             backupTimer.set(backupInterval);
         }
         if(motorTimer.check()) {

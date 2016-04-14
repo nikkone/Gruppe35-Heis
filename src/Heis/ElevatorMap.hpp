@@ -3,7 +3,7 @@
 #include <map>
 
 // FOR DEBUGGING
-#include <iostream>
+#include <ostream>
 
 #include <boost/asio/ip/address_v4.hpp>
 using boost::asio::ip::address_v4;
@@ -13,17 +13,16 @@ class ElevatorMap {
 		std::map<address_v4,  Elevator> elevatorMap;
 	public:
 	ElevatorMap();
-	void addElevator(address_v4 ip, int location);//Blir aldri brukt
-	void addElevator(address_v4 ip);
-	void removeElevator(address_v4 ip);
-	void setDestination(address_v4 ip, int destination);
-	void setCurrentLocation(address_v4 ip, int location);
-	int getDestination(address_v4 ip);
-	int getCurrentLocation(address_v4 ip);
-	bool checkLocation(address_v4 ip, int floor);
-	bool checkDestination(int floor);
-	bool shouldTakeOrder(address_v4 ip, int order);
+	void addElevator(const address_v4 &ip, int location);//Blir aldri brukt
+	void addElevator(const address_v4 &ip);
+	void removeElevator(const address_v4 &ip);
+	void setDestination(const address_v4 &ip, int destination);
+	void setCurrentLocation(const address_v4 &ip, int location);
+	int getDestination(const address_v4 &ip) const;
+	int getCurrentLocation(const address_v4 &ip) const;
+	bool checkLocation(const address_v4 &ip, int floor) const;
+	bool checkDestination(int floor) const;
+	bool shouldTakeOrder(const address_v4 &ip, int order) const;
 
-	//DEBUG
-	void print();
+	friend std::ostream &operator<<( std::ostream &output, const ElevatorMap &ElevatorMap_ref );
 };

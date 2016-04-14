@@ -63,7 +63,7 @@ void ElevatorFSM::setState(state_t nextState) {
     }
 }
 
-elev_motor_direction_t ElevatorFSM::findDirection() {
+elev_motor_direction_t ElevatorFSM::findDirection() const {
     int direction = elevators->getDestination(com->getMyIP()) - elevators->getCurrentLocation(com->getMyIP());
     if(direction > 0) {
         return DIRN_UP;
@@ -80,7 +80,7 @@ void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
     elev_set_button_lamp(buttonType, floor, ON);
 }
 void ElevatorFSM::stopButtonPressed(void) {
-    elevators->print();
+    std::cout << *elevators << std::endl;
 }
 bool ElevatorFSM::stopCheck(int floor) {
     if(orders->checkOrder(BUTTON_COMMAND, floor)) {
@@ -145,10 +145,9 @@ void ElevatorFSM::newDestination(int floor) {
     }*/
 }
 
-void ElevatorFSM::interpretMessage(address_v4 messageIP, message_t messageType, int floor) {
+void ElevatorFSM::interpretMessage(const address_v4 &messageIP, message_t messageType, int floor) {
         switch(messageType) {
             case COMMAND:
-                std::cout << "COMMAND" << floor << std::endl;
                 buttonPressed(BUTTON_COMMAND, floor);
                 break;
             case CALL_UP:
@@ -211,8 +210,8 @@ void ElevatorFSM::interpretMessage(address_v4 messageIP, message_t messageType, 
                 break;
     }
 }
-void ElevatorFSM::newMail(std::vector<std::tuple<address_v4, message_t, int>> mail){
-    for(std::vector<std::tuple<address_v4, message_t, int>>::iterator it = mail.begin(); it != mail.end(); it++) {
+void ElevatorFSM::newMail(const std::vector<std::tuple<address_v4, message_t, int>> &mail){
+    for(std::vector<std::tuple<address_v4, message_t, int>>::const_iterator it = mail.begin(); it != mail.end(); it++) {
         interpretMessage(std::get<0>(*it),std::get<1>(*it),std::get<2>(*it));   
     }
 }

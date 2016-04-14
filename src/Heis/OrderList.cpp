@@ -1,15 +1,11 @@
 #include "OrderList.hpp"
 #include <iostream>
 void OrderList::add(elev_button_type_t type, int floor) {
-    if(find(type, floor)==orders.end()) {
+    if(checkOrder(type, floor)) {
         orders.push_back(Button(type,floor));
     }
 }
-void OrderList::print() {//endre til stream
-    for(std::list<Button>::iterator it = orders.begin(); it != orders.end(); it++) {
-        std::cout << *it;
-    }
-}
+
 std::list<Button>::iterator OrderList::find(elev_button_type_t type, int floor) {
     for(std::list<Button>::iterator it = orders.begin(); it != orders.end(); it++) {
         if(it->getFloor()==floor) {
@@ -26,18 +22,18 @@ void OrderList::remove(elev_button_type_t type, int floor) {
         orders.erase(it);
     }
 }
-int OrderList::getNextFloor(address_v4 ip, ElevatorMap *elevators) {
+int OrderList::getNextFloor(const address_v4 &ip, const ElevatorMap &elevators) const {
     if(!orders.empty()) {
         int nextOrder;
-        for(std::list<Button>::iterator button = orders.begin(); button != orders.end(); button++) {
+        for(std::list<Button>::const_iterator button = orders.begin(); button != orders.end(); button++) {
             nextOrder = button->getFloor();
             if(button->getType() == BUTTON_COMMAND) {//Utfør intern kommando uansett
                 return nextOrder;
             } else {//Kun for opp og ned knapper
-                if(elevators->checkDestination(nextOrder) || elevators->checkLocation(ip, nextOrder)) {
+                if(elevators.checkDestination(nextOrder) || elevators.checkLocation(ip, nextOrder)) {
                     continue;
                 } else {
-                    if(elevators->shouldTakeOrder(ip, nextOrder)) {
+                    if(elevators.shouldTakeOrder(ip, nextOrder)) {
                         return nextOrder;
                     } else {
                         continue;
@@ -48,19 +44,21 @@ int OrderList::getNextFloor(address_v4 ip, ElevatorMap *elevators) {
     }
     return -1;
 }
-bool OrderList::checkOrder(elev_button_type_t type, int floor) {
-    if(find(type, floor)==orders.end()) {
-        return false;
+bool OrderList::checkOrder(elev_button_type_t type, int floor) const {
+    for(std::list<Button>::const_iterator it = orders.begin(); it != orders.end(); it++) {
+        if(it->getFloor()==floor) {
+            if(it->getType()==type) {
+                return true;
+            }
+        }
     }
-    return true;
+    return false;
 }
-/*
+
 std::ostream &operator<<( std::ostream &output, const OrderList &OrderList_ref ) {
-    for(std::list<Button>::iterator it = (OrderList_ref.orders).begin(); it != OrderList_ref.orders.end(); it++) {
+    for(std::list<Button>::const_iterator it = (OrderList_ref.orders).begin(); it != OrderList_ref.orders.end(); it++) {
         output << *it;
     }
-    std::list<Button>::iterator it = (OrderList_ref.orders).begin();
-    //std::list<Button>::iterator it = (OrderList_ref.orders).begin()
     return output;
 }
-*/
+

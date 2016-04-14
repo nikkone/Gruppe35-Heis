@@ -22,11 +22,11 @@ class communication {
 		std::string toJSON(message_t type, int floor);
 		char* findmyip();
 	public:
-		address_v4 getMyIP();
+		const address_v4 getMyIP() const;
 		communication(ElevatorMap *elevators_p);
 		~communication();
 
-		std::vector<std::tuple<address_v4, message_t, int>> checkMailbox();
+		const std::vector<std::tuple<address_v4, message_t, int>> checkMailbox();
 		void updateElevatorMap();
 		void sendMail(message_t type, int floor);
 		void sendMail(elev_button_type_t buttonType, int floor);

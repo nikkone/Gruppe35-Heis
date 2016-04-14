@@ -32,7 +32,7 @@ char* communication::findmyip() {
         }
     return p;
 }
-address_v4 communication::getMyIP() {
+const address_v4 communication::getMyIP() const{
     return myIP;
 }
 communication::communication(ElevatorMap *elevators_p) {
@@ -70,7 +70,7 @@ std::tuple<address_v4, message_t, int> communication::decodeJSON(std::string jso
     return std::make_tuple(address_v4(), FAILED, -1);
 }
 
-std::vector<std::tuple<address_v4, message_t, int>> communication::checkMailbox() {
+const std::vector<std::tuple<address_v4, message_t, int>> communication::checkMailbox() {
     std::vector<std::pair<address_v4, std::string >> mail = com->get_messages();
     std::vector<std::tuple<address_v4, message_t, int>> decodedMessages;
     for(std::vector<std::pair<address_v4, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
