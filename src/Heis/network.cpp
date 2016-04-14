@@ -215,16 +215,16 @@ vector<pair<address_v4, bool>>  network::get_listofPeers(){
 
 
 void network::udpBroadcaster(){
-    io_service io_service;
-    udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
-    socket.set_option(socket_base::broadcast(true));
-    udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
-    string ip_s = ip.to_string();
-    char * data = new char[ip_s.size() + 1];
-    copy(ip_s.begin(), ip_s.end(), data);
-    data[ip_s.size()] = '\0';
-    strcpy(data, (ip.to_string()).c_str());
     while(true){
+        io_service io_service;
+        udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
+        socket.set_option(socket_base::broadcast(true));
+        udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
+        string ip_s = ip.to_string();
+        char * data = new char[ip_s.size() + 1];
+        copy(ip_s.begin(), ip_s.end(), data);
+        data[ip_s.size()] = '\0';
+        strcpy(data, (ip.to_string()).c_str());
         try{
             socket.send_to(buffer(data, strlen(data)), broadcast_endpoint);
         } catch(...){cerr << "Could not connect to socket" << endl;}
