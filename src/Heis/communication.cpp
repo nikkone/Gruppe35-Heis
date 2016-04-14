@@ -58,31 +58,18 @@ std::string communication::toJSON(message_t type, int floor){
 }
 
 std::tuple<address_v4, message_t, int> communication::decodeJSON(std::string json){
-
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
-    if (first == std::string::npos) {
-        //std::cout << "{ not found!" << std::endl;
-        //std::cout << json << std::endl;
-    } else if (last == std::string::npos) {
-        std::cout << "} not found!" << std::endl;
-    } else if (last < first) {
-        std::cout << "} before {!" << std::endl;
-    } else {
+    if((first != std::string::npos) && (last != std::string::npos) && (last > first)) {
         ptree pt;
         json = json.substr (first,last-first+1);
         std::istringstream is(json);
-
         read_json(is, pt);
-
-        address_v4 messageIP = address_v4::from_string(pt.get<std::string>("ip"));//Kan kanskje forenkles
-        message_t type = (message_t)pt.get<int>("type");
-        int floor = pt.get<int>("floor");
-        return std::make_tuple(messageIP, type, floor);
+        return std::make_tuple(address_v4::from_string(pt.get<std::string>("ip")), (message_t)pt.get<int>("type"), pt.get<int>("floor"));
     }
     return std::make_tuple(address_v4(), FAILED, -1);
-
 }
+
 std::vector<std::tuple<address_v4, message_t, int>> communication::checkMailbox() {
     std::vector<std::pair<address_v4, std::string >> mail = com->get_messages();
     std::vector<std::tuple<address_v4, message_t, int>> decodedMessages;

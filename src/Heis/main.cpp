@@ -65,14 +65,14 @@ const int backupInterval = 1;//seconds
 int main() {
     OrderList orders;
     ElevatorMap elevators;
-    Timer* motorTimer = new Timer();
+    Timer motorTimer;
     communication kom = communication(&elevators);
-    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, motorTimer, &kom);
+    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, &motorTimer, &kom);
     elevators.addElevator(kom.getMyIP(), 0);
     Backup backup("backup.txt", &fsm);//skift til .json?
     backup.restore(&orders);
-    Timer* backupTimer = new Timer();//Endre til ikke dynamisk alokert
-    backupTimer->set(backupInterval);
+    Timer backupTimer;//Endre til ikke dynamisk alokert
+    backupTimer.set(backupInterval);
     int previousFloorSensor = -1;
     int previousDestination= -1;
     while(true) {
@@ -90,7 +90,7 @@ int main() {
             if(floorSensorSignal != previousFloorSensor) {
                 kom.sendMail(CURRENT_LOCATION, floorSensorSignal);
                 std::cout << "Sending location: " << floorSensorSignal << std::endl;
-                previousFloorSensor = floorSensorSignal;//Sjekk legginn i if setning???????????    
+                previousFloorSensor = floorSensorSignal; 
             }
             fsm.floorSensorActivated(floorSensorSignal);
         }
@@ -122,11 +122,12 @@ int main() {
             fsm.stopButtonPressed();
         }
         //END DEBUG
-        if(backupTimer->check()) {
+        if(backupTimer.check()) {
             backup.make(&orders);
-            backupTimer->set(backupInterval);
+            backupTimer.set(backupInterval);
         }
-        if(motorTimer->check()) {
+        if(motorTimer.check()) {
+            std::cerr << "Elevator hardware timed out!" << std::endl;
             return 1;
         }
         usleep(100000);

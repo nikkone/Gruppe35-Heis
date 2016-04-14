@@ -9,10 +9,9 @@ ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Tim
     motorTimer = motorTimer_p;
     com = com_p;
     setState(UNINITIALIZED);
-    timer = new Timer();
 }
 ElevatorFSM::~ElevatorFSM() {
-    delete timer;
+    //delete timer;
 }
 void ElevatorFSM::TimerTimedOut() {
     setState(IDLE);
@@ -35,7 +34,7 @@ void ElevatorFSM::setState(state_t nextState) {
             elev_set_door_open_lamp(ON);
             motorTimer->reset();
             elevators->setDestination(com->getMyIP(), -1);
-            timer->set(2);
+            doorTimer.set(2);
             break;
         case UNINITIALIZED:
             if (!elev_init()) {
@@ -133,7 +132,7 @@ void ElevatorFSM::floorSensorActivated(int floor) {
         }
     }
     //Poll timer, bør kun gjøres i state DOOR_OPEN
-    if(timer->check()) {
+    if(doorTimer.check()) {
         TimerTimedOut();
     }
 }

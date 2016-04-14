@@ -5,19 +5,26 @@ Backup::Backup(std::string filename, ElevatorFSM *fsm_p) {
 	fsm = fsm_p;
 }
 void Backup::writeStringToFile(std::string str) {
-    std::ofstream out(backupFile);
-    out << str;
-    out.close();
+    try {
+        std::ofstream outFile(backupFile);
+        outFile << str;
+        outFile.close();
+    } catch(...) {
+        std::cerr << "Could not write to backupfile: " << backupFile << std::endl;
+    }
 }
 std::string Backup::readStringFromFile() {
     std::string str;
     try {
-        std::ifstream t(backupFile);
-        t.seekg(0, std::ios::end);
-        str.reserve(t.tellg());
-        t.seekg(0, std::ios::beg);
-        str.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-    } catch(...) {}
+        std::ifstream innFile(backupFile);
+        innFile.seekg(0, std::ios::end);
+        str.reserve(innFile.tellg());
+        innFile.seekg(0, std::ios::beg);
+        str.assign((std::istreambuf_iterator<char>(innFile)), std::istreambuf_iterator<char>());
+        innFile.close();
+    } catch(...) {
+        std::cerr << "Could not read backupfile: " << backupFile << std::endl;
+    }
     return str;
 }
 void Backup::restore(OrderList *orders) {
@@ -45,7 +52,6 @@ std::string Backup::toJSON(elev_button_type_t type, int floor){
     ptree pt;
     pt.put("type", type);
     pt.put("floor", floor);
-
     std::ostringstream buf;
     write_json(buf, pt);
     std::string json = buf.str();
@@ -54,20 +60,11 @@ std::string Backup::toJSON(elev_button_type_t type, int floor){
 void Backup::decodeJSON(std::string json){
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
-    if (first == std::string::npos) {
-        std::cout << "{ not found!" << std::endl;
-        std::cout << json << std::endl;
-    } else if (last == std::string::npos) {
-        std::cout << "} not found!" << std::endl;
-    } else if (last < first) {
-        std::cout << "} before {!" << std::endl;
-    } else {
+    if((first != std::string::npos) && (last != std::string::npos) && (last > first)) {
         ptree pt;
         json = json.substr (first,last-first+1);
         std::istringstream is(json);
         read_json(is, pt);
-        elev_button_type_t type = (elev_button_type_t)pt.get<int>("type");
-        int floor = pt.get<int>("floor");
-        fsm->buttonPressed(type, floor);
+        fsm->buttonPressed((elev_button_type_t)pt.get<int>("type"), pt.get<int>("floor"));
     }
 }

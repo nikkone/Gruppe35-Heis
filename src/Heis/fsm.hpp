@@ -20,7 +20,7 @@ const int N_BUTTONS = 3;
 class ElevatorFSM {
     private:
     	OrderList* orders;
-    	Timer* timer;
+    	Timer doorTimer;
         Timer* motorTimer;
 
     	state_t elevatorState;
