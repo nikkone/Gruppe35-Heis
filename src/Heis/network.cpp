@@ -57,17 +57,21 @@ void network::connectionHandler(){
         // Check if allready connected
         for(auto& sock : *clientList)
         {
-            if(get<2>(sock) == clientSock->remote_endpoint().address().to_v4())
-                return; 
-
+            try{
+                if(get<2>(sock) == clientSock->remote_endpoint().address().to_v4()){
+                    return; 
+                } 
+            } catch(...){cerr << "Could not connect to socket" << endl;}
         }
-        address_v4 s = clientSock->remote_endpoint().address().to_v4();
-        clientList->emplace_back(make_tuple(clientSock, time(NULL), s));
-        clientList_mtx.unlock();
         connectedPeers_mtx.lock();
-        connectedPeers.emplace_back(make_pair(s,true));
+        try{
+            address_v4 s = clientSock->remote_endpoint().address().to_v4();
+            clientList->emplace_back(make_tuple(clientSock, time(NULL), s));
+            connectedPeers.emplace_back(make_pair(s,true));
+            cout << s << " connected sucsessfully!" << endl;
+        } catch(...){cerr << "Could not connect to socket" << endl;}
         connectedPeers_mtx.unlock();
-        cout << s << " connected sucsessfully!" << endl;
+        clientList_mtx.unlock();
     }
 }
 
@@ -107,7 +111,7 @@ void network::sendtoSocket(socket_ptr clientSock, string msg){
     try{
         clientSock->write_some(buffer(data, strlen(data)));
     }
-    catch(exception& e){}
+    catch(...){cerr << "Could not connect to socket" << endl;}
     delete[] data;
 }
 
@@ -160,7 +164,6 @@ void network::recieve(){
 }
 
 void network::messageParser(tuple<socket_ptr, time_t, address_v4> &clientSock, string_ptr msg){
-    address_v4 ip = get<0>(clientSock)->remote_endpoint().address().to_v4();
     boost::algorithm::trim(*msg);
     cout << *msg << endl;
     if(msg->find("syn") != string::npos){
@@ -179,7 +182,10 @@ void network::messageParser(tuple<socket_ptr, time_t, address_v4> &clientSock, s
     }
     if(!msg->empty()){
         innboundMessages_mtx.lock();
-        InnboundMessages.push_back(make_pair(ip, *msg));
+        try{
+            address_v4 ip = get<0>(clientSock)->remote_endpoint().address().to_v4();
+            InnboundMessages.push_back(make_pair(ip, *msg));
+        } catch(...){cerr << "Could not connect to socket" << endl;}
         innboundMessages_mtx.unlock();
     }
 }
@@ -208,14 +214,18 @@ vector<pair<address_v4, bool>>  network::get_listofPeers(){
 
 
 void network::udpBroadcaster(){
-    io_service io_service;
-    udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
-    socket.set_option(socket_base::broadcast(true));
-    udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
-    char data[bufSize];
-    strcpy(data, (ip.to_string()).c_str());
-    socket.send_to(buffer(data), broadcast_endpoint);
-    boost::this_thread::sleep(boost::posix_time::millisec(10000));
+    while(true){
+        io_service io_service;
+        udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
+        socket.set_option(socket_base::broadcast(true));
+        udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
+        char data[bufSize];
+        strcpy(data, (ip.to_string()).c_str());
+        try{
+            socket.send_to(buffer(data), broadcast_endpoint);
+        } catch(...){cerr << "Could not connect to socket" << endl;}
+        boost::this_thread::sleep(boost::posix_time::millisec(10000));
+    }
 }
 
 void network::udpListener(){
@@ -250,7 +260,7 @@ void network::udpListener(){
                     connectedPeers_mtx.unlock();
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
                 }
-                catch(exception& e){}
+                catch(...){cerr << "Could not connect to socket" << endl;}
             }
         }
     }
