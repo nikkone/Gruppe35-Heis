@@ -214,13 +214,13 @@ vector<pair<address_v4, bool>>  network::get_listofPeers(){
 
 
 void network::udpBroadcaster(){
+    io_service io_service;
+    udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
+    socket.set_option(socket_base::broadcast(true));
+    udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
+    char data[15];
+    strcpy(data, (ip.to_string()).c_str());
     while(true){
-        io_service io_service;
-        udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
-        socket.set_option(socket_base::broadcast(true));
-        udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
-        char data[bufSize];
-        strcpy(data, (ip.to_string()).c_str());
         try{
             socket.send_to(buffer(data), broadcast_endpoint);
         } catch(...){cerr << "Could not connect to socket" << endl;}
@@ -258,7 +258,7 @@ void network::udpListener(){
                     connectedPeers.emplace_back(make_pair(address_v4::from_string(*msg),true));
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
                 }
-                catch(...){cerr << "Could not connect to socket" << endl;}
+                catch(...){cerr << "Could not connect to socket 5: " << *msg << endl;}
                 clientList_mtx.unlock();
                 connectedPeers_mtx.unlock();
             }
