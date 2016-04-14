@@ -212,10 +212,17 @@ void network::udpBroadcaster(){
     udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
     socket.set_option(socket_base::broadcast(true));
     udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
-    char data[bufSize];
+    string ip_s = ip.to_string();
+    char * data = new char[ip_s.size() + 1];
+    copy(ip_s.begin(), ip_s.end(), data);
+    data[ip_s.size()] = '\0';
     strcpy(data, (ip.to_string()).c_str());
-    socket.send_to(buffer(data), broadcast_endpoint);
-    boost::this_thread::sleep(boost::posix_time::millisec(10000));
+    while(true){
+        try{
+            socket.send_to(buffer(data, strlen(data)), broadcast_endpoint);
+        } catch(...){cerr << "Could not connect to socket" << endl;}
+        boost::this_thread::sleep(boost::posix_time::millisec(10000));
+    }
 }
 
 void network::udpListener(){
