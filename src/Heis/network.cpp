@@ -224,12 +224,12 @@ void network::udpBroadcaster(){
     copy(ip_s.begin(), ip_s.end(), data);
     data[ip_s.size()] = '\0';
     strcpy(data, (ip.to_string()).c_str());
-    //while(true){
+    while(true){
         try{
             socket.send_to(buffer(data, strlen(data)), broadcast_endpoint);
         } catch(...){cerr << "Could not connect to socket" << endl;}
         boost::this_thread::sleep(boost::posix_time::millisec(10000));
-    //}
+    }
 }
 
 void network::udpListener(){
@@ -263,9 +263,9 @@ void network::udpListener(){
                     cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
                 }
                 catch(...){cerr << "Could not connect to socket 5: " << *msg << endl;}
-                clientList_mtx.unlock();
                 connectedPeers_mtx.unlock();
             }
+            clientList_mtx.unlock();
         }
     }
     boost::this_thread::sleep(boost::posix_time::millisec(100));
