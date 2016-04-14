@@ -224,12 +224,12 @@ void network::udpBroadcaster(){
     copy(ip_s.begin(), ip_s.end(), data);
     data[ip_s.size()] = '\0';
     strcpy(data, (ip.to_string()).c_str());
-    while(true){
+    //while(true){
         try{
             socket.send_to(buffer(data, strlen(data)), broadcast_endpoint);
         } catch(...){cerr << "Could not connect to socket" << endl;}
         boost::this_thread::sleep(boost::posix_time::millisec(10000));
-    }
+    //}
 }
 
 void network::udpListener(){
@@ -244,6 +244,7 @@ void network::udpListener(){
         if(!msg->empty())
         {
             bool allreadyConnected = false;
+            clientList_mtx.lock();
             for(auto& sock : *clientList)
             {
                 if(get<2>(sock) == address_v4::from_string(*msg) || ip == address_v4::from_string(*msg) ) {
@@ -251,7 +252,6 @@ void network::udpListener(){
                 }
             }
             if(!allreadyConnected){
-                clientList_mtx.lock();
                 connectedPeers_mtx.lock();
                 try
                 {

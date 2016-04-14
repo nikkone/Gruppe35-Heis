@@ -35,6 +35,7 @@ using boost::asio::ip::address_v4;
         + Se gjennom if og while-løkkene i receive()
         + Mutex rundt get rutinene?
         + Bedre navn på respond, sendToAll eller noe sånt?
+        - Skikkelige navn på ip
     - Kommunikasjon
         + Dele opp decodeJSON()
         + Sette decodeJSON tilbake til å ta ip fra jSON
