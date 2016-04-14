@@ -47,7 +47,7 @@ using boost::asio::ip::address_v4;
     - ElevatorFSM
         + Endre navn på staten RUNNING til MOVING eller noe sånt(Tips fra Anders)
     - ElevatorMap
-        - Fjerne myIP på en eller annen måte
+        + Fjerne myIP på en eller annen måte
     - Gjøre klassene våre mer komplette
         + Destructors hvis dynamisk alokert 
     - Overalt

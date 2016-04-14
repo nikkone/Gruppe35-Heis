@@ -86,6 +86,7 @@ void network::heartbeat(){
                 if(seconds >= heartbeat_time)
                 { 
                     cout << "Client dissconected" << endl;
+                    get<0>(clientSock)->close();
                     address_v4 s = get<2>(clientSock);
                     connectedPeers_mtx.lock();
                     connectedPeers.emplace_back(make_pair(s,false));
@@ -223,12 +224,12 @@ void network::udpBroadcaster(){
     copy(ip_s.begin(), ip_s.end(), data);
     data[ip_s.size()] = '\0';
     strcpy(data, (ip.to_string()).c_str());
-    //while(true){
+    while(true){
         try{
             socket.send_to(buffer(data, strlen(data)), broadcast_endpoint);
         } catch(...){cerr << "Could not connect to socket" << endl;}
         boost::this_thread::sleep(boost::posix_time::millisec(10000));
-    //}
+    }
 }
 
 void network::udpListener(){
@@ -245,7 +246,7 @@ void network::udpListener(){
             bool allreadyConnected = false;
             for(auto& sock : *clientList)
             {
-                if(get<2>(sock) == address_v4::from_string(*msg)) {
+                if(get<2>(sock) == address_v4::from_string(*msg) || ip == address_v4::from_string(*msg) ) {
                     allreadyConnected = true; 
                 }
             }
