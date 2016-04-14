@@ -3,11 +3,10 @@
 #include <queue>
 #include <string>
 #include <cstdlib>
-#include <ctime>
-#include <tuple>
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 #include "network.hpp"
 
@@ -22,7 +21,7 @@ typedef boost::shared_ptr< list< tuple< socket_ptr, time_t, address_v4 > > > cli
 typedef boost::shared_ptr< queue<string> > messageQueue_ptr;
 
 const int bufSize = 128; 
-const double heartbeat_time = 3; //Acceptable waiting time?
+const double heartbeat_time = 3;
 
 io_service service;
 boost::mutex OutMessageQueue_mtx;
@@ -32,17 +31,6 @@ boost::mutex connectedPeers_mtx;
 clientList_ptr clientList(new list< tuple< socket_ptr, time_t, address_v4 > >);
 messageQueue_ptr OutMessageQueue(new queue<string>);
 
-
-/*
-
-Skille recieve og send ack/syn
-udpBrodcaster dele opp (udpListener)
-kalle udpBroadcaster hvert nte sek
-Sender emptyspace ved ack/syn fikse
-
-*/
-
-
 network::network(int port, address_v4 ip) : port(port), ip(ip)
 {
     new boost::thread(bind(&network::connectionHandler, this));
@@ -51,20 +39,22 @@ network::network(int port, address_v4 ip) : port(port), ip(ip)
     boost::this_thread::sleep( boost::posix_time::millisec(100));
     new boost::thread(bind(&network::tcpMessageBroadcaster, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));        
+    new boost::thread(bind(&network::heartbeat, this));
+    boost::this_thread::sleep( boost::posix_time::millisec(100));
     new boost::thread(bind(&network::udpBroadcaster, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
-    new boost::thread(bind(&network::heartbeat, this));
+    new boost::thread(bind(&network::udpListener, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));      
 }
 
 void network::connectionHandler(){
-    //cout << "Waiting for peers..." << endl;
     tcp::acceptor acceptor(service, tcp::endpoint(tcp::v4(), port));
     while(true)
     {
         socket_ptr clientSock(new tcp::socket(service));
         acceptor.accept(*clientSock);
         clientList_mtx.lock();
+        // Check if allready connected
         for(auto& sock : *clientList)
         {
             if(get<2>(sock) == clientSock->remote_endpoint().address().to_v4())
@@ -101,13 +91,7 @@ void network::heartbeat(){
                 }
                 else
                 {
-                    char data[3];
-                    string syn = "syn";
-                    strcpy(data,syn.c_str());
-                    try{
-                        get<0>(clientSock)->write_some(buffer(data));
-                    }
-                    catch(exception& e){}
+                    sendtoSocket(get<0>(clientSock), "syn");
                 }
             }
             clientList_mtx.unlock();
@@ -116,20 +100,28 @@ void network::heartbeat(){
     }
 }
 
+void network::sendtoSocket(socket_ptr clientSock, string msg){
+    char * data = new char[msg.size() + 1];
+    copy(msg.begin(), msg.end(), data);
+    data[msg.size()] = '\0';
+    try{
+        clientSock->write_some(buffer(data, strlen(data)));
+    }
+    catch(exception& e){}
+    delete[] data;
+}
+
 void network::tcpMessageBroadcaster(){
     while(true)
     {
         if(!OutMessageQueue->empty())
         {
-            char data[bufSize] = {0};
-            string message = OutMessageQueue->front();
-            strcpy(data, message.c_str());
             clientList_mtx.lock();
             for(auto& clientSock : *clientList)
             {
                 try
                 {
-                    get<0>(clientSock)->write_some(buffer(data));
+                    sendtoSocket(get<0>(clientSock), OutMessageQueue->front());
                 }
                 catch(exception& e){}
             }
@@ -153,52 +145,10 @@ void network::recieve(){
                 if(get<0>(clientSock)->available())
                 {
                     try{
-                        address_v4 ip = get<0>(clientSock)->remote_endpoint().address().to_v4();
                         char readBuf[bufSize] = {0};
                         int bytesRead = get<0>(clientSock)->read_some(buffer(readBuf, bufSize));
                         string_ptr msg(new string(readBuf, bytesRead));
-                        if ((msg->find("syn") == string::npos) && (msg->find("ack") == string::npos))
-                        {
-                            innboundMessages_mtx.lock();
-                            InnboundMessages.push_back(make_pair(ip, *msg));
-                            innboundMessages_mtx.unlock();
-                        } else {
-                            if(msg->find("syn") != string::npos)
-                            {
-                                //cout << "syn received " << endl;
-
-                                do {
-                                    //cout << "syn removed" << endl;
-                                    msg->erase(msg->find("syn"),3);
-                                } while(msg->find("syn") != string::npos);
-
-                                char data[3];
-                                string ack = "ack";
-                                strcpy(data,ack.c_str());
-                                try{
-                                    get<0>(clientSock)->write_some(buffer(data));
-                                }
-                                catch(exception& e){}
-                                //Guard against concocted messages
-                                    //cout << "syn parse" << endl;
-                                innboundMessages_mtx.lock();
-                                InnboundMessages.push_back(make_pair(ip, *msg));
-                                innboundMessages_mtx.unlock();
-                            }
-                            if(msg->find("ack") != string::npos)
-                            {
-                                //cout << "ack received " << endl;
-                                do {
-                                    //cout << "ack removed" << endl;
-                                    msg->erase(msg->find("ack"),3);
-                                } while(msg->find("ack") != string::npos);
-                                get<1>(clientSock) = time(NULL);
-                                //cout << "ack parse" << endl;
-                                innboundMessages_mtx.lock();
-                                InnboundMessages.push_back(make_pair(ip, *msg));
-                                innboundMessages_mtx.unlock();
-                            }
-                        }
+                        messageParser(clientSock, msg);
                     }
                     catch(exception& e){}
                 }
@@ -206,6 +156,28 @@ void network::recieve(){
             clientList_mtx.unlock();
         }
         boost::this_thread::sleep(boost::posix_time::millisec(100));
+    }
+}
+
+void network::messageParser(tuple<socket_ptr, time_t, address_v4> clientSock, string_ptr msg){
+    address_v4 ip = get<0>(clientSock)->remote_endpoint().address().to_v4();
+    boost::algorithm::trim(*msg);
+    if(msg->find("syn") != string::npos){
+        do {
+            msg->erase(msg->find("syn"),3);
+        } while(msg->find("syn") != string::npos);
+        sendtoSocket(get<0>(clientSock), "ack");
+    }
+    if(msg->find("ack") != string::npos){
+        do {
+            msg->erase(msg->find("ack"),3);
+        } while(msg->find("ack") != string::npos);
+        get<1>(clientSock) = time(NULL);
+    }
+    if(!msg->empty()){
+        innboundMessages_mtx.lock();
+        InnboundMessages.push_back(make_pair(ip, *msg));
+        innboundMessages_mtx.unlock();
     }
 }
 
@@ -233,7 +205,6 @@ vector<pair<address_v4, bool>>  network::get_listofPeers(){
 
 
 void network::udpBroadcaster(){
-    //UDP broadcast, "Connect to me!" once on startup
     io_service io_service;
     udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
     socket.set_option(socket_base::broadcast(true));
@@ -241,21 +212,26 @@ void network::udpBroadcaster(){
     char data[bufSize];
     strcpy(data, (ip.to_string()).c_str());
     socket.send_to(buffer(data), broadcast_endpoint);
-    //Listen for incomming broadcast
-    udp::socket recieveSocket(io_service, udp::endpoint(udp::v4(), 8888 ));
+    boost::this_thread::sleep(boost::posix_time::millisec(10000));
+}
+
+void network::udpListener(){
+    io_service io_service;
+    udp::socket recieveSocket(io_service, udp::endpoint(udp::v4(), 8888));
     udp::endpoint sender_endpoint;
     while(true)
     {
         char data[bufSize] ={0};
         size_t bytes_transferred = recieveSocket.receive_from(buffer(data), sender_endpoint);
         string_ptr msg(new string(data, bytes_transferred));
-        bool allreadyConnected = false;
         if(!msg->empty())
         {
+            bool allreadyConnected = false;
             for(auto& sock : *clientList)
             {
-                if(get<2>(sock) == address_v4::from_string(*msg)) 
+                if(get<2>(sock) == address_v4::from_string(*msg)) {
                     allreadyConnected = true; 
+                }
             }
             if(!allreadyConnected){
                 try
@@ -275,4 +251,5 @@ void network::udpBroadcaster(){
             }
         }
     }
+    boost::this_thread::sleep(boost::posix_time::millisec(100));
 }
