@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdlib>
 
-#include <boost/asio.hpp>
+
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
@@ -159,20 +159,23 @@ void network::recieve(){
     }
 }
 
-void network::messageParser(tuple<socket_ptr, time_t, address_v4> clientSock, string_ptr msg){
+void network::messageParser(tuple<socket_ptr, time_t, address_v4> &clientSock, string_ptr msg){
     address_v4 ip = get<0>(clientSock)->remote_endpoint().address().to_v4();
     boost::algorithm::trim(*msg);
+    cout << *msg << endl;
     if(msg->find("syn") != string::npos){
+        cout << "syn found" << endl;
         do {
             msg->erase(msg->find("syn"),3);
         } while(msg->find("syn") != string::npos);
         sendtoSocket(get<0>(clientSock), "ack");
     }
     if(msg->find("ack") != string::npos){
+        cout << "ack found" << endl;
+        get<1>(clientSock) = time(NULL);
         do {
             msg->erase(msg->find("ack"),3);
         } while(msg->find("ack") != string::npos);
-        get<1>(clientSock) = time(NULL);
     }
     if(!msg->empty()){
         innboundMessages_mtx.lock();

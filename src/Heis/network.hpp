@@ -7,7 +7,8 @@
 #include <tuple>
 #include <ctime>
 
-#include <boost/asio/ip/address_v4.hpp>
+#include <boost/asio.hpp>
+//#include <boost/asio/ip/address_v4.hpp>
 
 using namespace boost::asio::ip;
 using boost::asio::ip::address_v4;
@@ -28,7 +29,7 @@ class network {
     void sendtoSocket(socket_ptr clientSock, std::string msg);
   	void tcpMessageBroadcaster();
    	void recieve();
-    void messageParser(std::tuple<socket_ptr, time_t, address_v4> clientSock, string_ptr msg);
+    void messageParser(std::tuple<socket_ptr, time_t, address_v4> &clientSock, string_ptr msg);
     void udpBroadcaster();
     void udpListener();
 
