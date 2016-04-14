@@ -6,7 +6,6 @@
 #include "network.hpp"
 #include "elev.h"
 #include "ElevatorMap.hpp"
-#include "OrderList.hpp"
 
 using boost::asio::ip::address_v4;
 typedef enum msg_types {
@@ -16,7 +15,7 @@ class communication {
 	private:
 		network *com;//Changename
 		ElevatorMap *elevators;
-		OrderList *orders;
+
 		address_v4 myIP;
 		std::tuple<address_v4, message_t, int> decodeJSON(std::string json);
 		//void interpretMessage(address_v4 messageIP, message_t messageType, int floor);
@@ -24,7 +23,7 @@ class communication {
 		char* findmyip();
 	public:
 		address_v4 getMyIP();
-		communication(ElevatorMap *elevators_p, OrderList *orders_p);
+		communication(ElevatorMap *elevators_p);
 		~communication();
 
 		std::vector<std::tuple<address_v4, message_t, int>> checkMailbox();

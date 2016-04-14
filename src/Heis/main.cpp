@@ -66,7 +66,7 @@ int main() {
     OrderList orders;
     ElevatorMap elevators;
     Timer* motorTimer = new Timer();
-    communication kom = communication(&elevators, &orders);
+    communication kom = communication(&elevators);
     ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, motorTimer, &kom);
     elevators.addElevator(kom.getMyIP(), 0);
     Backup backup("backup.txt", &fsm);//skift til .json?

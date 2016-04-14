@@ -52,7 +52,6 @@ std::string Backup::toJSON(elev_button_type_t type, int floor){
     return json;
 }
 void Backup::decodeJSON(std::string json){
-    ptree pt;
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
     if (first == std::string::npos) {
@@ -63,6 +62,7 @@ void Backup::decodeJSON(std::string json){
     } else if (last < first) {
         std::cout << "} before {!" << std::endl;
     } else {
+        ptree pt;
         json = json.substr (first,last-first+1);
         std::istringstream is(json);
         read_json(is, pt);

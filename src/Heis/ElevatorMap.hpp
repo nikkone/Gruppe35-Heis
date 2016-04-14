@@ -1,7 +1,7 @@
 #pragma once
 #include "Elevator.hpp"
 #include <map>
-#include <string>
+
 // FOR DEBUGGING
 #include <iostream>
 

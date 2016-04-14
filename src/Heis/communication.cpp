@@ -1,16 +1,15 @@
 #include "communication.hpp"
 
-#include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <sstream>
 #include <ostream>
 #include <utility> 
-#include <map>
 
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
 using boost::property_tree::write_json;
+
 
 char* communication::findmyip() {
         FILE * fp = popen("ifconfig", "r");
@@ -36,11 +35,10 @@ char* communication::findmyip() {
 address_v4 communication::getMyIP() {
     return myIP;
 }
-communication::communication(ElevatorMap *elevators_p, OrderList *orders_p) {
+communication::communication(ElevatorMap *elevators_p) {
     myIP = address_v4::from_string(findmyip());
     com = new network(8001, myIP);
     elevators = elevators_p;
-    orders = orders_p;
 }
 
 communication::~communication() {
@@ -60,7 +58,7 @@ std::string communication::toJSON(message_t type, int floor){
 }
 
 std::tuple<address_v4, message_t, int> communication::decodeJSON(std::string json){
-    ptree pt;
+
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
     if (first == std::string::npos) {
@@ -71,7 +69,7 @@ std::tuple<address_v4, message_t, int> communication::decodeJSON(std::string jso
     } else if (last < first) {
         std::cout << "} before {!" << std::endl;
     } else {
-
+        ptree pt;
         json = json.substr (first,last-first+1);
         std::istringstream is(json);
 
