@@ -4,7 +4,7 @@ Backup::Backup(std::string filename) {
 	backupFile = filename;
 
 }
-void Backup::writeStringToFile(std::string str) {
+void Backup::writeStringToFile(const std::string &str) {
     try {
         std::ofstream outFile(backupFile);
         outFile << str;
@@ -29,16 +29,16 @@ std::string Backup::readStringFromFile() {
 }
 
 
-void Backup::make(OrderList *orders) {
+void Backup::writeBackup(OrderList *orders) {
 	std::string output;
     for(int floor = 0; floor < N_FLOORS; floor++){
         if(orders->checkOrder(BUTTON_COMMAND, floor)) {
-            output += toJSON(BUTTON_COMMAND, floor);
+            output += makeJSON(BUTTON_COMMAND, floor);
         }
     }
     writeStringToFile(output);
 }
-std::string Backup::toJSON(elev_button_type_t type, int floor){
+std::string Backup::makeJSON(elev_button_type_t type, int floor){
     ptree pt;
     pt.put("type", type);
     pt.put("floor", floor);
@@ -47,14 +47,14 @@ std::string Backup::toJSON(elev_button_type_t type, int floor){
     std::string json = buf.str();
     return json;
 }
-std::tuple<elev_button_type_t, int> Backup::decodeJSON(std::string json){
+std::tuple<elev_button_type_t, int> Backup::readJSON(const std::string &json){
     ptree pt;
     std::istringstream is(json);
     read_json(is, pt);
     return std::make_tuple((elev_button_type_t)pt.get<int>("type"), pt.get<int>("floor"));
 }
 
-std::vector<std::tuple<elev_button_type_t, int>> Backup::restore(OrderList *orders) {
+std::vector<std::tuple<elev_button_type_t, int>> Backup::readBackup() {
     std::string str = readStringFromFile();
     std::size_t first = str.find('{');
     std::size_t last = str.find('}');
@@ -62,7 +62,7 @@ std::vector<std::tuple<elev_button_type_t, int>> Backup::restore(OrderList *orde
     while((first != std::string::npos) && (last != std::string::npos) && (last > first)){
         std::string json = str.substr (first,last-first+1);
         str.erase(first,last-first+1);
-        decodedMessages.push_back(decodeJSON(json));
+        decodedMessages.push_back(readJSON(json));
         first = str.find('{');
         last = str.find('}');
     }

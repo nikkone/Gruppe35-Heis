@@ -18,13 +18,13 @@ using boost::property_tree::write_json;
 class Backup {
 	private:
 		std::string backupFile;
-		void writeStringToFile(std::string str);
+		void writeStringToFile(const std::string &str);
 		std::string readStringFromFile();
-		std::tuple<elev_button_type_t, int> decodeJSON(std::string json);
-		std::string toJSON(elev_button_type_t type, int floor);
+		std::tuple<elev_button_type_t, int> readJSON(const std::string &json);
+		std::string makeJSON(elev_button_type_t type, int floor);
 
 	public:
 		Backup(std::string filename);
-		std::vector<std::tuple<elev_button_type_t, int>> restore(OrderList *orders);
-		void make(OrderList *orders);
+		std::vector<std::tuple<elev_button_type_t, int>> readBackup();
+		void writeBackup(OrderList *orders);
 };

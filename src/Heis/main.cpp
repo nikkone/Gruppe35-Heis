@@ -71,8 +71,8 @@ int main() {
     ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, &motorTimer, &communication);
     elevators.addElevator(communication.getMyIP(), 0);
     Backup backup("backup.txt");//skift til .json?
-    fsm.newMessages(backup.restore(&orders));
-    Timer backupTimer;//Endre til ikke dynamisk alokert
+    fsm.newMessages(backup.readBackup());
+    Timer backupTimer;
     backupTimer.set(backupInterval);
     int previousFloorSensor = -1;
     int previousDestination= -1;
@@ -114,7 +114,7 @@ int main() {
                         }
                     //}
                 }
-                prev[floor][button] = buttonSignal;//Sjekk legginn i if setning
+                prev[floor][button] = buttonSignal;
             }
         }
 
@@ -124,7 +124,7 @@ int main() {
         }
         //END DEBUG
         if(backupTimer.check()) {
-            backup.make(&orders);
+            backup.writeBackup(&orders);
             backupTimer.set(backupInterval);
         }
         if(motorTimer.check()) {

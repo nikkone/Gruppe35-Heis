@@ -11,32 +11,44 @@ using boost::property_tree::read_json;
 using boost::property_tree::write_json;
 
 
-char* Communication::findmyip() {
+address_v4 Communication::findMyIP() {
+    try{
         FILE * fp = popen("ifconfig", "r");
         char* p, *e;
         if (fp) {
-                p=NULL; size_t n;
-                while ((getline(&p, &n, fp) > 0) && p) {
-                   if ( (p = strstr(p, "inet ")) ) {
-                        p+=5;
-                        if ( (p = strchr(p, ':')) ) {
-                            ++p;
-                            if ( (e = strchr(p, ' ')) ) {
-                                *e='\0';
-                                pclose(fp);
-                                return p;
-                            }
+            p=NULL; size_t n;
+            while ((getline(&p, &n, fp) > 0) && p) {
+                if ( (p = strstr(p, "inet ")) ) {
+                    p+=5;
+                    if ( (p = strchr(p, ':')) ) {
+                        ++p;
+                        if ( (e = strchr(p, ' ')) ) {
+                            *e='\0';
+                            pclose(fp);
+                            return address_v4::from_string(p);
                         }
-                   }
-              }
+                    }
+                }
+            }
         }
-    return p;
+    } catch(...) {
+        std::cerr << "Could not find ip from ifconfig" << std::endl;
+    }
+    std::cout << "Write your IP now: ";
+    std::string input;
+    std::getline(std::cin, input);
+    try {
+        return address_v4::from_string(input);
+    } catch(...) {
+        std::cerr << "Could not parse ip, exiting!" << std::endl;
+        exit(1);
+    }
 }
 const address_v4 Communication::getMyIP() const{
     return myIP;
 }
 Communication::Communication(ElevatorMap *elevators_p) {
-    myIP = address_v4::from_string(findmyip());
+    myIP = findMyIP();
     network = new Network(8001, myIP);
     elevators = elevators_p;
 }
@@ -45,7 +57,7 @@ Communication::~Communication() {
     delete network;
 }
 
-std::string Communication::toJSON(message_t type, int floor){
+std::string Communication::makeJSON(message_t type, int floor){
     ptree pt;
     pt.put("ip", myIP);
     pt.put("type", type);
@@ -57,7 +69,7 @@ std::string Communication::toJSON(message_t type, int floor){
     return json;
 }
 
-std::tuple<address_v4, message_t, int> Communication::decodeJSON(std::string json){
+std::tuple<address_v4, message_t, int> Communication::readJSON(std::string json){
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
     if((first != std::string::npos) && (last != std::string::npos) && (last > first)) {
@@ -74,7 +86,7 @@ const std::vector<std::tuple<address_v4, message_t, int>> Communication::checkMa
     std::vector<std::pair<address_v4, std::string >> mail = network->get_messages();
     std::vector<std::tuple<address_v4, message_t, int>> decodedMessages;
     for(std::vector<std::pair<address_v4, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
-        decodedMessages.push_back(decodeJSON(it->second));   
+        decodedMessages.push_back(readJSON(it->second));   
     }
     return decodedMessages;
 }
@@ -92,7 +104,7 @@ void Communication::updateElevatorMap() {
     }
 }
 void Communication::sendMail(message_t type, int floor) {
-    network->send(toJSON(type, floor));
+    network->send(makeJSON(type, floor));
 }
 void Communication::sendMail(elev_button_type_t buttonType, int floor) {
     switch(buttonType) {

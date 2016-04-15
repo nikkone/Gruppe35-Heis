@@ -17,10 +17,9 @@ class Communication {
 		ElevatorMap *elevators;
 
 		address_v4 myIP;
-		std::tuple<address_v4, message_t, int> decodeJSON(std::string json);
-		//void interpretMessage(address_v4 messageIP, message_t messageType, int floor);
-		std::string toJSON(message_t type, int floor);
-		char* findmyip();
+		std::tuple<address_v4, message_t, int> readJSON(std::string json);
+		std::string makeJSON(message_t type, int floor);
+		address_v4 findMyIP();
 	public:
 		const address_v4 getMyIP() const;
 		Communication(ElevatorMap *elevators_p);
