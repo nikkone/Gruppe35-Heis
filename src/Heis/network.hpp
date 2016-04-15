@@ -21,7 +21,7 @@ class network {
   std::vector<std::pair<address_v4, std::string>> InnboundMessages;
   std::vector<std::pair<address_v4, bool>> connectedPeers;
   int port;
-  address_v4 ip; 
+  address_v4 myIP; 
 
   private:
   	void connectionHandler();
@@ -34,7 +34,7 @@ class network {
     void udpListener();
 
   public:
-  	network(int port, address_v4 ip);
+  	network(int port, address_v4 myIP);
   	void send(std::string msg);
     std::vector<std::pair<address_v4, std::string>> get_messages();
     std::vector<std::pair<address_v4, bool>> get_listofPeers();

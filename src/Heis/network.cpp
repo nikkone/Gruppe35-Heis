@@ -4,7 +4,6 @@
 #include <string>
 #include <cstdlib>
 
-
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
@@ -31,7 +30,7 @@ boost::mutex connectedPeers_mtx;
 clientList_ptr clientList(new list< tuple< socket_ptr, time_t, address_v4 > >);
 messageQueue_ptr OutMessageQueue(new queue<string>);
 
-network::network(int port, address_v4 ip) : port(port), ip(ip)
+network::network(int port, address_v4 myIP) : port(port), myIP(myIP)
 {
     new boost::thread(bind(&network::connectionHandler, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
@@ -61,14 +60,16 @@ void network::connectionHandler(){
                 if(get<2>(sock) == clientSock->remote_endpoint().address().to_v4()){
                     return; 
                 } 
-            } catch(...){cerr << "Could not connect to socket in connectionHandler, remote endpoint" << endl;}
+            } catch(...){
+                cerr << "Could not reach remote endpoint in connectionHandler" << endl;
+            }
         }
         connectedPeers_mtx.lock();
         try{
-            address_v4 s = clientSock->remote_endpoint().address().to_v4();
-            clientList->emplace_back(make_tuple(clientSock, time(NULL), s));
-            connectedPeers.emplace_back(make_pair(s,true));
-            cout << s << " connected sucsessfully!" << endl;
+            address_v4 ip = clientSock->remote_endpoint().address().to_v4();
+            clientList->emplace_back(make_tuple(clientSock, time(NULL), ip));
+            connectedPeers.emplace_back(make_pair(ip,true));
+            cout << ip << " connected sucsessfully!" << endl;
         } catch(...){cerr << "Could not connect to socket in connectionHandler, remote endpoint" << endl;}
         connectedPeers_mtx.unlock();
         clientList_mtx.unlock();
@@ -87,9 +88,9 @@ void network::heartbeat(){
                 { 
                     cout << "Client dissconected" << endl;
                     get<0>(clientSock)->close();
-                    address_v4 s = get<2>(clientSock);
+                    address_v4 ip = get<2>(clientSock);
                     connectedPeers_mtx.lock();
-                    connectedPeers.emplace_back(make_pair(s,false));
+                    connectedPeers.emplace_back(make_pair(ip,false));
                     connectedPeers_mtx.unlock();
                     clientList->remove(clientSock);
                     break;
@@ -112,7 +113,9 @@ void network::sendtoSocket(socket_ptr clientSock, string msg){
     try{
         clientSock->write_some(buffer(data, strlen(data)));
     }
-    catch(...){cerr << "Could not connect to socket in sendtoSocket" << endl;}
+    catch(...){
+        cerr << "Could not connect to socket in sendtoSocket" << endl;
+    }
     delete[] data;
 }
 
@@ -128,7 +131,9 @@ void network::tcpMessageBroadcaster(){
                 {
                     sendtoSocket(get<0>(clientSock), OutMessageQueue->front());
                 }
-                catch(exception& e){}
+                catch(...){
+                    cerr << "Could not send to socket in tcpMessageBroadcaster" << endl;
+                }
             }
             clientList_mtx.unlock();
             OutMessageQueue_mtx.lock();
@@ -155,7 +160,9 @@ void network::recieve(){
                         string_ptr msg(new string(readBuf, bytesRead));
                         messageParser(clientSock, msg);
                     }
-                    catch(exception& e){}
+                    catch(...){
+                        cerr << "Could not read from socket in recieve" << endl;
+                    }
                 }
             }
             clientList_mtx.unlock();
@@ -181,9 +188,11 @@ void network::messageParser(tuple<socket_ptr, time_t, address_v4> &clientSock, s
     if(!msg->empty()){
         innboundMessages_mtx.lock();
         try{
-            address_v4 ip = get<0>(clientSock)->remote_endpoint().address().to_v4();
-            InnboundMessages.push_back(make_pair(ip, *msg));
-        } catch(...){cerr << "Could not connect to socket in messageParser" << endl;}
+            address_v4 myIP = get<0>(clientSock)->remote_endpoint().address().to_v4();
+            InnboundMessages.push_back(make_pair(myIP, *msg));
+        } catch(...){
+            cerr << "Could not reach remote endpoint in messageParser" << endl;
+        }
         innboundMessages_mtx.unlock();
     }
 }
@@ -216,11 +225,10 @@ void network::udpBroadcaster(){
     udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
     socket.set_option(socket_base::broadcast(true));
     udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
-    string ip_s = ip.to_string();
-    char * data = new char[ip_s.size() + 1];
-    copy(ip_s.begin(), ip_s.end(), data);
-    data[ip_s.size()] = '\0';
-    strcpy(data, (ip.to_string()).c_str());
+    string ip_string = myIP.to_string();
+    char * data = new char[ip_string.size() + 1];
+    copy(ip_string.begin(), ip_string.end(), data);
+    data[ip_string.size()] = '\0';
     bool socketClosed = false;
     while(true){
         if(socketClosed){
@@ -273,17 +281,16 @@ void network::udpListener(){
                 }
             }
             cout << *msg << endl;
-            if(!allreadyConnected && ip != address_v4::from_string(*msg)){
+            if(!allreadyConnected && myIP != address_v4::from_string(*msg)){
                 connectedPeers_mtx.lock();
                 try
                 {
                     tcp::endpoint ep(address::from_string(*msg), port);
                     socket_ptr sock(new tcp::socket(service));
-                    cout << "after con" << endl;
                     sock->connect(ep);
                     clientList->emplace_back(make_tuple(sock, time(NULL), address_v4::from_string(*msg)));
                     connectedPeers.emplace_back(make_pair(address_v4::from_string(*msg),true));
-                    cout << "Broadcast recieved from: " << *msg <<" -> Connected!" << endl;
+                    cout << "Broadcast recieved from: " << *msg << " -> Connected!" << endl;
                 }
                 catch(...){
                     recieveSocket.close();
