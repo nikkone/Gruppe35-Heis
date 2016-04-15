@@ -14,9 +14,8 @@ using namespace boost::asio;
 using namespace boost::asio::ip;
 using boost::asio::ip::address_v4;
 
-typedef boost::shared_ptr<tcp::socket> socket_ptr;
-typedef boost::shared_ptr<string> string_ptr;
-typedef boost::shared_ptr< list< tuple< socket_ptr, time_t, address_v4 > > > clientList_ptr;
+typedef boost::shared_ptr<udp::socket> udpSocket_ptr;
+typedef boost::shared_ptr< list< tuple< tcpSocket_ptr, time_t, address_v4 > > > clientList_ptr;
 typedef boost::shared_ptr< queue<string> > messageQueue_ptr;
 
 const int bufSize = 128; 
@@ -27,7 +26,7 @@ boost::mutex OutMessageQueue_mtx;
 boost::mutex clientList_mtx;
 boost::mutex innboundMessages_mtx;
 boost::mutex connectedPeers_mtx;
-clientList_ptr clientList(new list< tuple< socket_ptr, time_t, address_v4 > >);
+clientList_ptr clientList(new list< tuple< tcpSocket_ptr, time_t, address_v4 > >);
 messageQueue_ptr OutMessageQueue(new queue<string>);
 
 network::network(int port, address_v4 myIP) : port(port), myIP(myIP)
@@ -50,7 +49,7 @@ void network::connectionHandler(){
     tcp::acceptor acceptor(service, tcp::endpoint(tcp::v4(), port));
     while(true)
     {
-        socket_ptr clientSock(new tcp::socket(service));
+        tcpSocket_ptr clientSock(new tcp::socket(service));
         acceptor.accept(*clientSock);
         clientList_mtx.lock();
         // Check if allready connected
@@ -106,7 +105,7 @@ void network::heartbeat(){
     }
 }
 
-void network::sendtoSocket(socket_ptr clientSock, string msg){
+void network::sendtoSocket(tcpSocket_ptr clientSock, string msg){
     char * data = new char[msg.size() + 1];
     copy(msg.begin(), msg.end(), data);
     data[msg.size()] = '\0';
@@ -171,7 +170,7 @@ void network::recieve(){
     }
 }
 
-void network::messageParser(tuple<socket_ptr, time_t, address_v4> &clientSock, string_ptr msg){
+void network::messageParser(tuple<tcpSocket_ptr, time_t, address_v4> &clientSock, string_ptr msg){
     boost::algorithm::trim(*msg);
     if(msg->find("syn") != string::npos){
         do {
@@ -222,8 +221,8 @@ vector<pair<address_v4, bool>>  network::get_listofPeers(){
 
 void network::udpBroadcaster(){
     io_service io_service;
-    udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
-    socket.set_option(socket_base::broadcast(true));
+    udpSocket_ptr socket(new udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
+    socket->set_option(socket_base::broadcast(true));
     udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
     string ip_string = myIP.to_string();
     char * data = new char[ip_string.size() + 1];
@@ -233,41 +232,43 @@ void network::udpBroadcaster(){
     while(true){
         if(socketClosed){
             try{
-                udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
+	            socket.reset();
+			    socket = udpSocket_ptr (new udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
+			    socket->set_option(socket_base::broadcast(true));
                 socketClosed = false;
             } catch(...){ 
                 cerr << "Could not open socket in udpBroadcaster" << endl;
             }
         }
         try{
-            socket.send_to(buffer(data, strlen(data)), broadcast_endpoint);
+            socket->send_to(buffer(data, strlen(data)), broadcast_endpoint);
         } catch(...){
-            socket.close();
+            socket->close();
             socketClosed = true;
             cerr << "Could not connect to socket in udpBroadcaster" << endl;
         }
-        boost::this_thread::sleep(boost::posix_time::millisec(10000));
+        boost::this_thread::sleep(boost::posix_time::millisec(1000));
     }
 }
 
 void network::udpListener(){
     io_service io_service;
-    udp::socket recieveSocket(io_service, udp::endpoint(udp::v4(), 8888));
+    udpSocket_ptr recieveSocket(new udp::socket(io_service, udp::endpoint(udp::v4(), 8888)));
     udp::endpoint sender_endpoint;
     bool socketClosed = false;
     while(true)
     {
         if (socketClosed == true){
             try{
-                udp::socket recieveSocket(io_service, udp::endpoint(udp::v4(), 8888));
-                udp::endpoint sender_endpoint;
+            	recieveSocket.reset();
+			    recieveSocket = udpSocket_ptr (new udp::socket(io_service, udp::endpoint(udp::v4(), 8888)));
                 socketClosed = false;
             }catch(...){
                 cerr << "Could not open socket in udpBroadcaster" << endl;
             }
         }
         char data[bufSize] ={0};
-        size_t bytes_transferred = recieveSocket.receive_from(buffer(data), sender_endpoint);
+        size_t bytes_transferred = recieveSocket->receive_from(buffer(data), sender_endpoint);
         string_ptr msg(new string(data, bytes_transferred));
         if(!msg->empty())
         {
@@ -276,24 +277,22 @@ void network::udpListener(){
             for(auto& sock : *clientList)
             {
                 if(get<2>(sock) == address_v4::from_string(*msg)) {
-                    cout << "client list ip: " << get<2>(sock) << endl;
                     allreadyConnected = true; 
                 }
             }
-            cout << *msg << endl;
             if(!allreadyConnected && myIP != address_v4::from_string(*msg)){
                 connectedPeers_mtx.lock();
                 try
                 {
                     tcp::endpoint ep(address::from_string(*msg), port);
-                    socket_ptr sock(new tcp::socket(service));
+                    tcpSocket_ptr sock(new tcp::socket(service));
                     sock->connect(ep);
                     clientList->emplace_back(make_tuple(sock, time(NULL), address_v4::from_string(*msg)));
                     connectedPeers.emplace_back(make_pair(address_v4::from_string(*msg),true));
                     cout << "Broadcast recieved from: " << *msg << " -> Connected!" << endl;
                 }
                 catch(...){
-                    recieveSocket.close();
+                    recieveSocket->close();
                     socketClosed = true;
                     cerr << "Could not connect to socket in udpListener" << endl;
                 }
