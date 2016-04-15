@@ -17,7 +17,7 @@ void ElevatorFSM::TimerTimedOut() {
     setState(IDLE);
 }
 void ElevatorFSM::setState(state_t nextState) {
-    //std::cout <<"changestate: " << nextState << std::endl;
+    std::cout <<"changestate: " << nextState << std::endl;
     elevatorState = nextState;
     switch (nextState) {
         case IDLE:

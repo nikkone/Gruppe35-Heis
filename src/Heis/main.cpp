@@ -123,7 +123,7 @@ int main() {
         }
         //END DEBUG
         if(backupTimer.check()) {
-            backup.make(orders);
+            backup.make(&orders);
             backupTimer.set(backupInterval);
         }
         if(motorTimer.check()) {

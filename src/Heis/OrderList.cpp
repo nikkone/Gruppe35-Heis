@@ -1,7 +1,7 @@
 #include "OrderList.hpp"
-#include <iostream>
+#include <ostream>
 void OrderList::add(elev_button_type_t type, int floor) {
-    if(checkOrder(type, floor)) {
+    if(find(type, floor)==orders.end()) {
         orders.push_back(Button(type,floor));
     }
 }
@@ -44,21 +44,15 @@ int OrderList::getNextFloor(const address_v4 &ip, const ElevatorMap &elevators) 
     }
     return -1;
 }
-bool OrderList::checkOrder(elev_button_type_t type, int floor) const {
-    for(std::list<Button>::const_iterator it = orders.begin(); it != orders.end(); it++) {
-        if(it->getFloor()==floor) {
-            if(it->getType()==type) {
-                return true;
-            }
-        }
+bool OrderList::checkOrder(elev_button_type_t type, int floor) {
+    if(find(type, floor)==orders.end()) {
+        return false;
     }
-    return false;
+    return true;
 }
-
 std::ostream &operator<<( std::ostream &output, const OrderList &OrderList_ref ) {
     for(std::list<Button>::const_iterator it = (OrderList_ref.orders).begin(); it != OrderList_ref.orders.end(); it++) {
         output << *it;
     }
     return output;
 }
-
