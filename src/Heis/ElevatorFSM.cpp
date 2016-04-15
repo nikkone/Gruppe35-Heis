@@ -1,23 +1,20 @@
-#include "fsm.hpp"
+#include "ElevatorFSM.hpp"
 
-//for cout
 #include <iostream>
 
-ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p,  communication* com_p) {
+ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p,  Communication* com_p) {
     elevators = elevatorMap_p;
 	orders = orderList_p;
     motorTimer = motorTimer_p;
     com = com_p;
     setState(UNINITIALIZED);
 }
-ElevatorFSM::~ElevatorFSM() {
-    //delete timer;
-}
+
 void ElevatorFSM::TimerTimedOut() {
     setState(IDLE);
 }
 void ElevatorFSM::setState(state_t nextState) {
-    std::cout <<"changestate: " << nextState << std::endl;
+    //std::cout <<"changestate: " << nextState << std::endl;
     elevatorState = nextState;
     switch (nextState) {
         case IDLE:
@@ -82,7 +79,7 @@ void ElevatorFSM::buttonPressed(elev_button_type_t buttonType, int floor) {
 void ElevatorFSM::stopButtonPressed(void) {
     std::cout << *elevators << std::endl;
 }
-bool ElevatorFSM::stopCheck(int floor) {
+bool ElevatorFSM::shouldStop(int floor) {
     if(orders->checkOrder(BUTTON_COMMAND, floor)) {
         return true;
     }
@@ -123,7 +120,7 @@ void ElevatorFSM::floorSensorActivated(int floor) {
     if((floor != elevators->getCurrentLocation(com->getMyIP())) || (floor == elevators->getDestination(com->getMyIP()))) {
         elevators->setCurrentLocation(com->getMyIP(), floor);
     	elev_set_floor_indicator(floor);
-        if(stopCheck(floor)) {
+        if(shouldStop(floor)) {
             setState(DOOR_OPEN);
         	orders->remove(BUTTON_CALL_UP, floor);
         	orders->remove(BUTTON_CALL_DOWN, floor);
@@ -210,8 +207,13 @@ void ElevatorFSM::interpretMessage(const address_v4 &messageIP, message_t messag
                 break;
     }
 }
-void ElevatorFSM::newMail(const std::vector<std::tuple<address_v4, message_t, int>> &mail){
+void ElevatorFSM::newMessages(const std::vector<std::tuple<address_v4, message_t, int>> &mail){
     for(std::vector<std::tuple<address_v4, message_t, int>>::const_iterator it = mail.begin(); it != mail.end(); it++) {
         interpretMessage(std::get<0>(*it),std::get<1>(*it),std::get<2>(*it));   
+    }
+}
+void ElevatorFSM::newMessages(const std::vector<std::tuple<elev_button_type_t, int>> &mail){
+    for(std::vector<std::tuple<elev_button_type_t, int>>::const_iterator it = mail.begin(); it != mail.end(); it++) {
+        buttonPressed(std::get<0>(*it),std::get<1>(*it));   
     }
 }

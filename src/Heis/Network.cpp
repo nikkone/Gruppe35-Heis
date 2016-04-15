@@ -7,7 +7,7 @@
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
-#include "network.hpp"
+#include "Network.hpp"
 
 using namespace std;
 using namespace boost::asio;
@@ -29,23 +29,23 @@ boost::mutex connectedPeers_mtx;
 clientList_ptr clientList(new list< tuple< tcpSocket_ptr, time_t, address_v4 > >);
 messageQueue_ptr OutMessageQueue(new queue<string>);
 
-network::network(int port, address_v4 myIP) : port(port), myIP(myIP)
+Network::Network(int port, const address_v4 &myIP) : port(port), myIP(myIP)
 {
-    new boost::thread(bind(&network::connectionHandler, this));
+    new boost::thread(bind(&Network::connectionHandler, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
-    new boost::thread(bind(&network::recieve, this));
+    new boost::thread(bind(&Network::tcpMessageReceive, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
-    new boost::thread(bind(&network::tcpMessageBroadcaster, this));
+    new boost::thread(bind(&Network::tcpMessageBroadcaster, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));        
-    new boost::thread(bind(&network::heartbeat, this));
+    new boost::thread(bind(&Network::heartbeat, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
-    new boost::thread(bind(&network::udpBroadcaster, this));
+    new boost::thread(bind(&Network::udpBroadcaster, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));
-    new boost::thread(bind(&network::udpListener, this));
+    new boost::thread(bind(&Network::udpListener, this));
     boost::this_thread::sleep( boost::posix_time::millisec(100));      
 }
 
-void network::connectionHandler(){
+void Network::connectionHandler(){
     tcp::acceptor acceptor(service, tcp::endpoint(tcp::v4(), port));
     while(true)
     {
@@ -75,7 +75,7 @@ void network::connectionHandler(){
     }
 }
 
-void network::heartbeat(){
+void Network::heartbeat(){
     while(true){
         if(!clientList->empty())
         {
@@ -105,7 +105,7 @@ void network::heartbeat(){
     }
 }
 
-void network::sendtoSocket(tcpSocket_ptr clientSock, string msg){
+void Network::sendtoSocket(tcpSocket_ptr clientSock, const string &msg){
     char * data = new char[msg.size() + 1];
     copy(msg.begin(), msg.end(), data);
     data[msg.size()] = '\0';
@@ -118,7 +118,7 @@ void network::sendtoSocket(tcpSocket_ptr clientSock, string msg){
     delete[] data;
 }
 
-void network::tcpMessageBroadcaster(){
+void Network::tcpMessageBroadcaster(){
     while(true)
     {
         if(!OutMessageQueue->empty())
@@ -143,7 +143,7 @@ void network::tcpMessageBroadcaster(){
     }
 }
 
-void network::recieve(){
+void Network::tcpMessageReceive(){
     while(true)
     {
         if(!clientList->empty())
@@ -170,7 +170,7 @@ void network::recieve(){
     }
 }
 
-void network::messageParser(tuple<tcpSocket_ptr, time_t, address_v4> &clientSock, string_ptr msg){
+void Network::messageParser(tuple<tcpSocket_ptr, time_t, address_v4> &clientSock, string_ptr msg){
     boost::algorithm::trim(*msg);
     if(msg->find("syn") != string::npos){
         do {
@@ -196,13 +196,13 @@ void network::messageParser(tuple<tcpSocket_ptr, time_t, address_v4> &clientSock
     }
 }
 
-void network::send(string msg){
+void Network::send(const string &msg){
     OutMessageQueue_mtx.lock();
     OutMessageQueue->push(msg);
     OutMessageQueue_mtx.unlock();
 }
 
-vector<pair<address_v4, string>> network::get_messages(){
+vector<pair<address_v4, string>> Network::get_messages(){
     innboundMessages_mtx.lock();
     vector<pair<address_v4, string>> messages = InnboundMessages;
     InnboundMessages = {};
@@ -210,7 +210,7 @@ vector<pair<address_v4, string>> network::get_messages(){
     return messages;
 }
 
-vector<pair<address_v4, bool>>  network::get_listofPeers(){
+vector<pair<address_v4, bool>>  Network::get_listofPeers(){
     connectedPeers_mtx.lock();
     vector<pair<address_v4, bool>>  peers = connectedPeers;
     connectedPeers_mtx.unlock();
@@ -219,7 +219,7 @@ vector<pair<address_v4, bool>>  network::get_listofPeers(){
 }
 
 
-void network::udpBroadcaster(){
+void Network::udpBroadcaster(){
     io_service io_service;
     udpSocket_ptr socket(new udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
     socket->set_option(socket_base::broadcast(true));
@@ -251,7 +251,7 @@ void network::udpBroadcaster(){
     }
 }
 
-void network::udpListener(){
+void Network::udpListener(){
     io_service io_service;
     udpSocket_ptr recieveSocket(new udp::socket(io_service, udp::endpoint(udp::v4(), 8888)));
     udp::endpoint sender_endpoint;

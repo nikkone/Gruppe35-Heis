@@ -3,7 +3,7 @@
 #include <tuple>
 #include <vector>
 #include <boost/asio/ip/address_v4.hpp>
-#include "network.hpp"
+#include "Network.hpp"
 #include "elev.h"
 #include "ElevatorMap.hpp"
 
@@ -11,9 +11,9 @@ using boost::asio::ip::address_v4;
 typedef enum msg_types {
     CALL_UP, CALL_DOWN, COMMAND, CURRENT_LOCATION, DESTINATION, SENDMEALL, FAILED
 } message_t;
-class communication {
+class Communication {
 	private:
-		network *com;//Changename
+		Network *network;
 		ElevatorMap *elevators;
 
 		address_v4 myIP;
@@ -23,8 +23,8 @@ class communication {
 		char* findmyip();
 	public:
 		const address_v4 getMyIP() const;
-		communication(ElevatorMap *elevators_p);
-		~communication();
+		Communication(ElevatorMap *elevators_p);
+		~Communication();
 
 		const std::vector<std::tuple<address_v4, message_t, int>> checkMailbox();
 		void updateElevatorMap();

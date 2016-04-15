@@ -1,15 +1,18 @@
-#include "timer.hpp"
-timer::timer() {
+#include "Timer.hpp"
+Timer::Timer() {
     endTime = 0;
 }
-void timer::set(int seconds) {
+void Timer::set(int seconds) {
     endTime = time(0)+seconds;
 }
-int timer::check(){
+void Timer::reset() {
+	endTime=0;
+}
+int Timer::check(){
     if(endTime==0) {
         return 0;
     } else if(time(0) >= endTime) {
-        endTime=0;
+        reset();
         return 1;
     }
     return 0;

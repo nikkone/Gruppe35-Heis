@@ -1,4 +1,4 @@
-#include "communication.hpp"
+#include "Communication.hpp"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -11,7 +11,7 @@ using boost::property_tree::read_json;
 using boost::property_tree::write_json;
 
 
-char* communication::findmyip() {
+char* Communication::findmyip() {
         FILE * fp = popen("ifconfig", "r");
         char* p, *e;
         if (fp) {
@@ -32,20 +32,20 @@ char* communication::findmyip() {
         }
     return p;
 }
-const address_v4 communication::getMyIP() const{
+const address_v4 Communication::getMyIP() const{
     return myIP;
 }
-communication::communication(ElevatorMap *elevators_p) {
+Communication::Communication(ElevatorMap *elevators_p) {
     myIP = address_v4::from_string(findmyip());
-    com = new network(8001, myIP);
+    network = new Network(8001, myIP);
     elevators = elevators_p;
 }
 
-communication::~communication() {
-    delete com;
+Communication::~Communication() {
+    delete network;
 }
 
-std::string communication::toJSON(message_t type, int floor){
+std::string Communication::toJSON(message_t type, int floor){
     ptree pt;
     pt.put("ip", myIP);
     pt.put("type", type);
@@ -57,7 +57,7 @@ std::string communication::toJSON(message_t type, int floor){
     return json;
 }
 
-std::tuple<address_v4, message_t, int> communication::decodeJSON(std::string json){
+std::tuple<address_v4, message_t, int> Communication::decodeJSON(std::string json){
     std::size_t first = json.find("{");
     std::size_t last = json.find("}");
     if((first != std::string::npos) && (last != std::string::npos) && (last > first)) {
@@ -70,16 +70,16 @@ std::tuple<address_v4, message_t, int> communication::decodeJSON(std::string jso
     return std::make_tuple(address_v4(), FAILED, -1);
 }
 
-const std::vector<std::tuple<address_v4, message_t, int>> communication::checkMailbox() {
-    std::vector<std::pair<address_v4, std::string >> mail = com->get_messages();
+const std::vector<std::tuple<address_v4, message_t, int>> Communication::checkMailbox() {
+    std::vector<std::pair<address_v4, std::string >> mail = network->get_messages();
     std::vector<std::tuple<address_v4, message_t, int>> decodedMessages;
     for(std::vector<std::pair<address_v4, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
         decodedMessages.push_back(decodeJSON(it->second));   
     }
     return decodedMessages;
 }
-void communication::updateElevatorMap() {
-    std::vector<std::pair<address_v4, bool>> peers = com->get_listofPeers();
+void Communication::updateElevatorMap() {
+    std::vector<std::pair<address_v4, bool>> peers = network->get_listofPeers();
     for(std::vector<std::pair<address_v4, bool>>::iterator it = peers.begin(); it != peers.end(); it++) {
         std::cout << it->first << "->" << it->second << std::endl;
         if(it->second) {
@@ -91,10 +91,10 @@ void communication::updateElevatorMap() {
         }
     }
 }
-void communication::sendMail(message_t type, int floor) {
-    com->send(toJSON(type, floor));
+void Communication::sendMail(message_t type, int floor) {
+    network->send(toJSON(type, floor));
 }
-void communication::sendMail(elev_button_type_t buttonType, int floor) {
+void Communication::sendMail(elev_button_type_t buttonType, int floor) {
     switch(buttonType) {
         case BUTTON_CALL_UP:
             sendMail(CALL_UP, floor);

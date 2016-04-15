@@ -1,8 +1,8 @@
 #include "Backup.hpp"
-Backup::Backup(std::string filename, ElevatorFSM *fsm_p) {
+Backup::Backup(std::string filename) {
 	backupFile = "";
 	backupFile = filename;
-	fsm = fsm_p;
+
 }
 void Backup::writeStringToFile(std::string str) {
     try {
@@ -27,18 +27,8 @@ std::string Backup::readStringFromFile() {
     }
     return str;
 }
-void Backup::restore(OrderList *orders) {
-    std::string str = readStringFromFile();
-    std::size_t first = str.find('{');
-    std::size_t last = str.find('}');
-    while((first != std::string::npos) || (last != std::string::npos) || (last < first)){
-        std::string json = str.substr (first,last-first+1);
-        str.erase(first,last-first+1);
-        decodeJSON(json);
-       	first = str.find('{');
-        last = str.find('}');
-    }
-}
+
+
 void Backup::make(OrderList *orders) {
 	std::string output;
     for(int floor = 0; floor < N_FLOORS; floor++){
@@ -57,14 +47,24 @@ std::string Backup::toJSON(elev_button_type_t type, int floor){
     std::string json = buf.str();
     return json;
 }
-void Backup::decodeJSON(std::string json){
-    std::size_t first = json.find("{");
-    std::size_t last = json.find("}");
-    if((first != std::string::npos) && (last != std::string::npos) && (last > first)) {
-        ptree pt;
-        json = json.substr (first,last-first+1);
-        std::istringstream is(json);
-        read_json(is, pt);
-        fsm->buttonPressed((elev_button_type_t)pt.get<int>("type"), pt.get<int>("floor"));
+std::tuple<elev_button_type_t, int> Backup::decodeJSON(std::string json){
+    ptree pt;
+    std::istringstream is(json);
+    read_json(is, pt);
+    return std::make_tuple((elev_button_type_t)pt.get<int>("type"), pt.get<int>("floor"));
+}
+
+std::vector<std::tuple<elev_button_type_t, int>> Backup::restore(OrderList *orders) {
+    std::string str = readStringFromFile();
+    std::size_t first = str.find('{');
+    std::size_t last = str.find('}');
+    std::vector<std::tuple<elev_button_type_t, int>> decodedMessages;
+    while((first != std::string::npos) && (last != std::string::npos) && (last > first)){
+        std::string json = str.substr (first,last-first+1);
+        str.erase(first,last-first+1);
+        decodedMessages.push_back(decodeJSON(json));
+        first = str.find('{');
+        last = str.find('}');
     }
+    return decodedMessages;
 }

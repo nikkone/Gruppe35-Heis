@@ -3,9 +3,10 @@
 #include <boost/asio/ip/address_v4.hpp>
 
 #include "elev.h"
+#include "Timer.hpp"
 #include "OrderList.hpp"
-#include "fsm.hpp"
-#include "communication.hpp"
+#include "ElevatorFSM.hpp"
+#include "Communication.hpp"
 #include "ElevatorMap.hpp"
 #include "Backup.hpp"
 using boost::asio::ip::address_v4;
@@ -35,7 +36,7 @@ using boost::asio::ip::address_v4;
         + Se gjennom if og while-løkkene i receive()
         + Mutex rundt get rutinene?
         + Bedre navn på respond, sendToAll eller noe sånt?
-        - Skikkelige navn på ip
+        + Skikkelige navn på ip
     - Kommunikasjon
         + Dele opp decodeJSON()
         + Sette decodeJSON tilbake til å ta ip fra jSON
@@ -66,50 +67,50 @@ int main() {
     OrderList orders;
     ElevatorMap elevators;
     Timer motorTimer;
-    communication kom = communication(&elevators);
-    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, &motorTimer, &kom);
-    elevators.addElevator(kom.getMyIP(), 0);
-    Backup backup("backup.txt", &fsm);//skift til .json?
-    backup.restore(&orders);
+    Communication communication = Communication(&elevators);
+    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, &motorTimer, &communication);
+    elevators.addElevator(communication.getMyIP(), 0);
+    Backup backup("backup.txt");//skift til .json?
+    fsm.newMessages(backup.restore(&orders));
     Timer backupTimer;//Endre til ikke dynamisk alokert
     backupTimer.set(backupInterval);
     int previousFloorSensor = -1;
     int previousDestination= -1;
     while(true) {
-        fsm.newMail(kom.checkMailbox());
-        kom.updateElevatorMap();
+        fsm.newMessages(communication.checkMailbox());
+        communication.updateElevatorMap();
         //Send destination
-        if(previousDestination != elevators.getDestination(kom.getMyIP())) {
-            previousDestination = elevators.getDestination(kom.getMyIP());
+        if(previousDestination != elevators.getDestination(communication.getMyIP())) {
+            previousDestination = elevators.getDestination(communication.getMyIP());
             std::cout << "Sending destination: " << previousDestination << std::endl;
-            kom.sendMail(DESTINATION, previousDestination);
+            communication.sendMail(DESTINATION, previousDestination);
         }
 
         int floorSensorSignal = elev_get_floor_sensor_signal();
         if(floorSensorSignal != -1) {
             if(floorSensorSignal != previousFloorSensor) {
-                kom.sendMail(CURRENT_LOCATION, floorSensorSignal);
+                communication.sendMail(CURRENT_LOCATION, floorSensorSignal);
                 std::cout << "Sending location: " << floorSensorSignal << std::endl;
                 previousFloorSensor = floorSensorSignal; 
             }
             fsm.floorSensorActivated(floorSensorSignal);
         }
         //FLYTT PÅ KANSJKE? FARLIG Å FLYTTE PÅ POASS PÅ
-        if(orders.getNextFloor(kom.getMyIP(), elevators) != -1) {
-            fsm.newDestination(orders.getNextFloor(kom.getMyIP(), elevators));
+        if(orders.getNextFloor(communication.getMyIP(), elevators) != -1) {
+            fsm.newDestination(orders.getNextFloor(communication.getMyIP(), elevators));
             //std::cout << "New order: "<< std::endl;
         }
         static bool prev[N_FLOORS][N_BUTTONS];
         for(int floor = 0; floor < N_FLOORS; floor++){
             for(int button = 0; button < N_BUTTONS; button++){
-                if(button==BUTTON_CALL_DOWN && floor==0) continue; //Hindrer sjekking av ned i nedre etasje
-                if(button==BUTTON_CALL_UP && floor==N_FLOORS-1) continue; //Hindrer sjekking av opp i siste etasje
+                if(button==BUTTON_CALL_DOWN && floor==0) continue;
+                if(button==BUTTON_CALL_UP && floor==N_FLOORS-1) continue;
                 bool buttonSignal = elev_get_button_signal((elev_button_type_t)button, floor);
                 if(buttonSignal  &&  buttonSignal != prev[floor][button]){
                     //if(!orders.checkOrder((elev_button_type_t)button, floor)) {
                         fsm.buttonPressed((elev_button_type_t)button, floor);
                         if(button!=BUTTON_COMMAND) {
-                            kom.sendMail((elev_button_type_t)button, floor);
+                            communication.sendMail((elev_button_type_t)button, floor);
                         }
                     //}
                 }
