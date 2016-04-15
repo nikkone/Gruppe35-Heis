@@ -2,7 +2,6 @@
 #include "Elevator.hpp"
 #include <map>
 
-// FOR DEBUGGING
 #include <ostream>
 
 #include <boost/asio/ip/address_v4.hpp>

@@ -3,7 +3,6 @@
 #include <queue>
 #include <string>
 #include <cstdlib>
-
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
@@ -11,8 +10,6 @@
 
 using namespace std;
 using namespace boost::asio;
-using namespace boost::asio::ip;
-using boost::asio::ip::address_v4;
 
 typedef boost::shared_ptr<udp::socket> udpSocket_ptr;
 typedef boost::shared_ptr< list< tuple< tcpSocket_ptr, time_t, address_v4 > > > clientList_ptr;

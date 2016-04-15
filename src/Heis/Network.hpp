@@ -2,16 +2,12 @@
 
 #include <string>
 #include <vector>
-#include <map>
 #include <utility> 
 #include <tuple>
 #include <ctime>
-
 #include <boost/asio.hpp>
-//#include <boost/asio/ip/address_v4.hpp>
 
 using namespace boost::asio::ip;
-using boost::asio::ip::address_v4;
 
 typedef boost::shared_ptr<tcp::socket> tcpSocket_ptr;
 typedef boost::shared_ptr<std::string> string_ptr;

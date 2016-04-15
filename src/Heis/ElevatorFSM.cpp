@@ -1,7 +1,9 @@
 #include "ElevatorFSM.hpp"
 
 #include <iostream>
-
+enum toggle {
+    OFF, ON
+};
 ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p,  Communication* com_p) {
     elevators = elevatorMap_p;
 	orders = orderList_p;
