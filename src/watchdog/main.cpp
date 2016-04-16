@@ -33,7 +33,7 @@ void isModified(){
 }
 
 int main(){
-  system("gnome-terminal -e \"./bin/Heis\" &");
+  system("gnome-terminal -e \"./bin/heis\" &");
   while(true) {
     do{
       boost::thread t(&isModified);
@@ -42,11 +42,11 @@ int main(){
     elev_init();
     elev_set_motor_direction(DIRN_STOP);
     try {
-      system("killall -9 Heis &");
+      system("killall -9 heis &");
     } catch(...){
       std::cerr << "No process found" << std::endl;
     }
-    system("gnome-terminal -e \"./bin/Heis\" &");
+    system("gnome-terminal -e \"./bin/heis\" &");
     std::cerr << "Timed out, restarting" << std::endl;
     sleep(2);
   }
