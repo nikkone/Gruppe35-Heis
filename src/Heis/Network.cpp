@@ -42,6 +42,10 @@ Network::Network(int port, const address_v4 &myIP) : port(port), myIP(myIP)
     boost::this_thread::sleep( boost::posix_time::millisec(100));      
 }
 
+const address_v4 Network::getMyIP() const{
+    return myIP;
+}
+
 void Network::connectionHandler(){
     tcp::acceptor acceptor(service, tcp::endpoint(tcp::v4(), port));
     while(true)

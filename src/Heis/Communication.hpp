@@ -14,19 +14,17 @@ typedef enum msg_types {
 class Communication {
 	private:
 		Network *network;
-		ElevatorMap *elevators;
 
-		address_v4 myIP;
 		std::tuple<address_v4, message_t, int> readJSON(std::string json);
 		std::string makeJSON(message_t type, int floor);
 		address_v4 findMyIP();
 	public:
 		const address_v4 getMyIP() const;
-		Communication(ElevatorMap *elevators_p);
+		Communication();
 		~Communication();
 
 		const std::vector<std::tuple<address_v4, message_t, int>> checkMailbox();
-		void updateElevatorMap();
+		void updateElevatorMap(ElevatorMap &elevators);
 		void sendMail(message_t type, int floor);
 		void sendMail(elev_button_type_t buttonType, int floor);
 };

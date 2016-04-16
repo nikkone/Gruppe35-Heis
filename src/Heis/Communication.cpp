@@ -34,7 +34,7 @@ address_v4 Communication::findMyIP() {
     } catch(...) {
         std::cerr << "Could not find ip from ifconfig" << std::endl;
     }
-    std::cout << "Write your IP now: ";
+    std::cout << "Write your IP now (or 0.0.0.0): ";
     std::string input;
     std::getline(std::cin, input);
     try {
@@ -45,12 +45,10 @@ address_v4 Communication::findMyIP() {
     }
 }
 const address_v4 Communication::getMyIP() const{
-    return myIP;
+    return network->getMyIP();
 }
-Communication::Communication(ElevatorMap *elevators_p) {
-    myIP = findMyIP();
-    network = new Network(8001, myIP);
-    elevators = elevators_p;
+Communication::Communication() {
+    network = new Network(8001, findMyIP());
 }
 
 Communication::~Communication() {
@@ -59,7 +57,7 @@ Communication::~Communication() {
 
 std::string Communication::makeJSON(message_t type, int floor){
     ptree pt;
-    pt.put("ip", myIP);
+    pt.put("ip", getMyIP());
     pt.put("type", type);
     pt.put("floor", floor);//Trenger kanskje toString eller noe sånt?
 
@@ -90,15 +88,15 @@ const std::vector<std::tuple<address_v4, message_t, int>> Communication::checkMa
     }
     return decodedMessages;
 }
-void Communication::updateElevatorMap() {
+void Communication::updateElevatorMap(ElevatorMap &elevators) {
     std::vector<std::pair<address_v4, bool>> peers = network->get_listofPeers();
-    for(std::vector<std::pair<address_v4, bool>>::iterator it = peers.begin(); it != peers.end(); it++) {
+    for(std::vector<std::pair<address_v4, bool>>::const_iterator it = peers.begin(); it != peers.end(); it++) {
         std::cout << it->first << "->" << it->second << std::endl;
         if(it->second) {
-            elevators->addElevator(it->first);
+            elevators.addElevator(it->first);
             sendMail(SENDMEALL, 0);
         } else {
-            elevators->removeElevator(it->first);
+            elevators.removeElevator(it->first);
 
         }
     }

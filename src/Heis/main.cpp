@@ -67,7 +67,7 @@ int main() {
     OrderList orders;
     ElevatorMap elevators;
     Timer motorTimer;
-    Communication communication = Communication(&elevators);
+    Communication communication = Communication();
     ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, &motorTimer, &communication);
     elevators.addElevator(communication.getMyIP(), 0);
     Backup backup("backup.txt");//skift til .json?
@@ -78,7 +78,7 @@ int main() {
     int previousDestination= -1;
     while(true) {
         fsm.newMessages(communication.checkMailbox());
-        communication.updateElevatorMap();
+        communication.updateElevatorMap(elevators);
         //Send destination
         if(previousDestination != elevators.getDestination(communication.getMyIP())) {
             previousDestination = elevators.getDestination(communication.getMyIP());
