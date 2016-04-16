@@ -8,10 +8,6 @@ using boost::property_tree::ptree;
 using boost::property_tree::read_json;
 using boost::property_tree::write_json;
 
-Backup::Backup(const std::string &filename) {
-	backupFile = filename;
-}
-
 void Backup::writeStringToFile(const std::string &str) {
     try {
         std::ofstream outFile(backupFile);

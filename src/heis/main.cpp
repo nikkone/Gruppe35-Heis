@@ -19,21 +19,23 @@ int main() {
     ElevatorMap elevators;
     Timer motorTimer;
     Communication communication;
-    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, &motorTimer, &communication);
     elevators.addElevator(communication.getMyIP(), 0);
     Backup backup("backup.txt");
-    fsm.newMessages(backup.readBackup());
     Timer backupTimer;
     backupTimer.set(backupInterval);
+    ElevatorFSM fsm = ElevatorFSM(&orders, &elevators, &motorTimer, &communication);
+    fsm.newMessages(backup.readBackup());
     int previousFloorSensor = -1;
     int previousDestination= -1;
     while(true) {
-        fsm.newMessages(communication.checkMailbox());
+        fsm.newMessages(communication.checkMailbox());        
         communication.updateElevatorMap(elevators);
+
         if(previousDestination != elevators.getDestination(communication.getMyIP())) {
             previousDestination = elevators.getDestination(communication.getMyIP());
             communication.sendMail(DESTINATION, previousDestination);
         }
+
         int floorSensorSignal = elev_get_floor_sensor_signal();
         if(floorSensorSignal != -1) {
             if(floorSensorSignal != previousFloorSensor) {
@@ -42,9 +44,11 @@ int main() {
             }
             fsm.floorSensorActivated(floorSensorSignal);
         }
+
         if(orders.getNextFloor(communication.getMyIP(), elevators) != -1) {
             fsm.newDestination(orders.getNextFloor(communication.getMyIP(), elevators));
         }
+
         static bool prev[N_FLOORS][N_BUTTONS];
         for(int floor = 0; floor < N_FLOORS; ++floor){
             for(int button = 0; button < N_BUTTONS; ++button){
@@ -65,6 +69,7 @@ int main() {
             backup.writeBackup(orders);
             backupTimer.set(backupInterval);
         }
+
         if(motorTimer.check()) {
             std::cerr << "Elevator hardware timed out!" << std::endl;
             return 1;

@@ -46,15 +46,7 @@ address_v4 Communication::findMyIP() {
 }
 
 const address_v4 Communication::getMyIP() const{
-    return network->getMyIP();
-}
-
-Communication::Communication() {
-    network = new Network(8001, findMyIP());
-}
-
-Communication::~Communication() {
-    delete network;
+    return network.getMyIP();
 }
 
 std::string Communication::makeJSON(message_t type, int floor){
@@ -82,7 +74,7 @@ std::tuple<address_v4, message_t, int> Communication::readJSON(std::string json)
 }
 
 const std::vector<std::tuple<address_v4, message_t, int>> Communication::checkMailbox() {
-    std::vector<std::pair<address_v4, std::string >> mail = network->get_messages();
+    std::vector<std::pair<address_v4, std::string >> mail = network.get_messages();
     std::vector<std::tuple<address_v4, message_t, int>> decodedMessages;
     for(std::vector<std::pair<address_v4, std::string >>::iterator it = mail.begin(); it != mail.end(); ++it) {
         decodedMessages.push_back(readJSON(it->second));   
@@ -91,7 +83,7 @@ const std::vector<std::tuple<address_v4, message_t, int>> Communication::checkMa
 }
 
 void Communication::updateElevatorMap(ElevatorMap &elevators) {
-    std::vector<std::pair<address_v4, bool>> peers = network->get_listofPeers();
+    std::vector<std::pair<address_v4, bool>> peers = network.get_listofPeers();
     for(std::vector<std::pair<address_v4, bool>>::const_iterator it = peers.begin(); it != peers.end(); ++it) {
         if(it->second) {
             elevators.addElevator(it->first);
@@ -104,7 +96,7 @@ void Communication::updateElevatorMap(ElevatorMap &elevators) {
 }
 
 void Communication::sendMail(message_t type, int floor) {
-    network->send(makeJSON(type, floor));
+    network.send(makeJSON(type, floor));
 }
 
 void Communication::sendMail(elev_button_type_t buttonType, int floor) {

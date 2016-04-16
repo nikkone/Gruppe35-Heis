@@ -1,10 +1,5 @@
 #include "Button.hpp"
 
-Button::Button(elev_button_type_t type, int floor) {
-    buttonType=type;
-    buttonFloor=floor;
-}
-
 int Button::getFloor() const {
     return buttonFloor;
 }

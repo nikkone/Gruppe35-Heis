@@ -1,9 +1,5 @@
 #include "Timer.hpp"
 
-Timer::Timer() {
-    endTime = 0;
-}
-
 void Timer::set(int seconds) {
     endTime = time(0)+seconds;
 }

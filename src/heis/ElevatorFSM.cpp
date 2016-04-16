@@ -5,11 +5,8 @@ enum toggle {
     OFF, ON
 };
 
-ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p,  Communication* commmunication_p) {
-    elevators = elevatorMap_p;
-	orders = orderList_p;
-    motorTimer = motorTimer_p;
-    communication = commmunication_p;
+ElevatorFSM::ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p,  Communication* commmunication_p) 
+ : orders(orderList_p), motorTimer(motorTimer_p), elevators(elevatorMap_p), communication(commmunication_p) {
     setState(UNINITIALIZED);
 }
 
