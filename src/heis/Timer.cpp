@@ -1,13 +1,17 @@
 #include "Timer.hpp"
+
 Timer::Timer() {
     endTime = 0;
 }
+
 void Timer::set(int seconds) {
     endTime = time(0)+seconds;
 }
+
 void Timer::reset() {
 	endTime=0;
 }
+
 int Timer::check(){
     if(endTime==0) {
         return 0;

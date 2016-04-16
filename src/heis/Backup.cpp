@@ -7,11 +7,11 @@
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
 using boost::property_tree::write_json;
-Backup::Backup(std::string filename) {
-	backupFile = "";
-	backupFile = filename;
 
+Backup::Backup(const std::string &filename) {
+	backupFile = filename;
 }
+
 void Backup::writeStringToFile(const std::string &str) {
     try {
         std::ofstream outFile(backupFile);
@@ -21,6 +21,7 @@ void Backup::writeStringToFile(const std::string &str) {
         std::cerr << "Could not write to backupfile: " << backupFile << std::endl;
     }
 }
+
 std::string Backup::readStringFromFile() {
     std::string str;
     try {
@@ -36,25 +37,25 @@ std::string Backup::readStringFromFile() {
     return str;
 }
 
-
-void Backup::writeBackup(OrderList *orders) {
+void Backup::writeBackup(OrderList &orders) {
 	std::string output;
-    for(int floor = 0; floor < N_FLOORS; floor++){
-        if(orders->checkOrder(BUTTON_COMMAND, floor)) {
+    for(int floor = 0; floor < N_FLOORS; ++floor){
+        if(orders.checkOrder(BUTTON_COMMAND, floor)) {
             output += makeJSON(BUTTON_COMMAND, floor);
         }
     }
     writeStringToFile(output);
 }
+
 std::string Backup::makeJSON(elev_button_type_t type, int floor){
     ptree pt;
     pt.put("type", type);
     pt.put("floor", floor);
     std::ostringstream buf;
     write_json(buf, pt);
-    std::string json = buf.str();
-    return json;
+    return buf.str();
 }
+
 std::tuple<elev_button_type_t, int> Backup::readJSON(const std::string &json){
     ptree pt;
     std::istringstream is(json);

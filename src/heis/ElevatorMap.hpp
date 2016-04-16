@@ -1,18 +1,16 @@
 #pragma once
 #include "Elevator.hpp"
 #include <map>
-
 #include <ostream>
-
 #include <boost/asio/ip/address_v4.hpp>
+
 using boost::asio::ip::address_v4;
 
 class ElevatorMap {
 	private:
 		std::map<address_v4,  Elevator> elevatorMap;
 	public:
-	ElevatorMap();
-	void addElevator(const address_v4 &ip, int location);//Blir aldri brukt
+	void addElevator(const address_v4 &ip, int location);
 	void addElevator(const address_v4 &ip);
 	void removeElevator(const address_v4 &ip);
 	void setDestination(const address_v4 &ip, int destination);

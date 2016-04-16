@@ -1,5 +1,6 @@
 #pragma once
 #include <ctime>
+
 class Timer {
     private:
         std::time_t endTime;

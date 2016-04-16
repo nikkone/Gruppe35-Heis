@@ -44,9 +44,11 @@ address_v4 Communication::findMyIP() {
         exit(1);
     }
 }
+
 const address_v4 Communication::getMyIP() const{
     return network->getMyIP();
 }
+
 Communication::Communication() {
     network = new Network(8001, findMyIP());
 }
@@ -59,12 +61,11 @@ std::string Communication::makeJSON(message_t type, int floor){
     ptree pt;
     pt.put("ip", getMyIP());
     pt.put("type", type);
-    pt.put("floor", floor);//Trenger kanskje toString eller noe sånt?
+    pt.put("floor", floor);
 
     std::ostringstream buf;
     write_json(buf, pt);
-    std::string json = buf.str();//kan kanskje returneres direkte?
-    return json;
+    return buf.str();
 }
 
 std::tuple<address_v4, message_t, int> Communication::readJSON(std::string json){
@@ -83,15 +84,15 @@ std::tuple<address_v4, message_t, int> Communication::readJSON(std::string json)
 const std::vector<std::tuple<address_v4, message_t, int>> Communication::checkMailbox() {
     std::vector<std::pair<address_v4, std::string >> mail = network->get_messages();
     std::vector<std::tuple<address_v4, message_t, int>> decodedMessages;
-    for(std::vector<std::pair<address_v4, std::string >>::iterator it = mail.begin(); it != mail.end(); it++) {
+    for(std::vector<std::pair<address_v4, std::string >>::iterator it = mail.begin(); it != mail.end(); ++it) {
         decodedMessages.push_back(readJSON(it->second));   
     }
     return decodedMessages;
 }
+
 void Communication::updateElevatorMap(ElevatorMap &elevators) {
     std::vector<std::pair<address_v4, bool>> peers = network->get_listofPeers();
-    for(std::vector<std::pair<address_v4, bool>>::const_iterator it = peers.begin(); it != peers.end(); it++) {
-        std::cout << it->first << "->" << it->second << std::endl;
+    for(std::vector<std::pair<address_v4, bool>>::const_iterator it = peers.begin(); it != peers.end(); ++it) {
         if(it->second) {
             elevators.addElevator(it->first);
             sendMail(SENDMEALL, 0);
@@ -101,9 +102,11 @@ void Communication::updateElevatorMap(ElevatorMap &elevators) {
         }
     }
 }
+
 void Communication::sendMail(message_t type, int floor) {
     network->send(makeJSON(type, floor));
 }
+
 void Communication::sendMail(elev_button_type_t buttonType, int floor) {
     switch(buttonType) {
         case BUTTON_CALL_UP:

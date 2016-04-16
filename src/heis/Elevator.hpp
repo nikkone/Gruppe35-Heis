@@ -1,8 +1,7 @@
 #pragma once
 #include <ostream>
+
 class Elevator {
-    private:
-        /*std::string ip; lagres i map heller*/
     public:
         int currentLocation;
         int destination;

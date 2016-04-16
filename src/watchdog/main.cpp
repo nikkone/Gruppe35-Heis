@@ -1,19 +1,13 @@
-#include <iostream>
-#include <fstream>
-#include <string>
+#include <ostream>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/inotify.h>
-#include <signal.h>
 #include <boost/thread.hpp>
-#include <boost/chrono.hpp>
 #include "elev.h"
 
 #define EVENT_SIZE  ( sizeof (struct inotify_event) )
 #define BUF_LEN     ( 1024 * ( EVENT_SIZE + 16 ) )
-#define TIMEOUT     2
 
-using namespace std;
+const int TIMEOUT = 2;
 
 bool changed = false;
 
@@ -27,7 +21,6 @@ void isModified(){
   }
 
   int wd = inotify_add_watch( fd, "backup.txt", IN_MODIFY);
-  //Blocking read
   int length = read( fd, buffer, BUF_LEN );  
   if ( length < 0 ) {
     return;
@@ -35,7 +28,6 @@ void isModified(){
   changed = true;
   inotify_rm_watch( fd, wd );
 
-  //closing the INOTIFY instance
   close( fd );
   return;
 }
@@ -47,16 +39,16 @@ int main(){
       boost::thread t(&isModified);
       t.timed_join(boost::posix_time::seconds(TIMEOUT));
     } while(changed == true);
-    cout << "timed out" << endl;
     elev_init();
     elev_set_motor_direction(DIRN_STOP);
     try {
-      system("killall -9 Heis");
-    } catch(...){}
-    cout << "timed out" << endl;
+      system("killall -9 Heis &");
+    } catch(...){
+      std::cerr << "No process found" << std::endl;
+    }
     system("gnome-terminal -e \"./bin/Heis\" &");
+    std::cerr << "Timed out, restarting" << std::endl;
     sleep(2);
-    cout << "timed out" << endl;
   }
   return 0;
 }

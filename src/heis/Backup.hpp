@@ -15,7 +15,7 @@ class Backup {
 		std::string makeJSON(elev_button_type_t type, int floor);
 
 	public:
-		Backup(std::string filename);
+		Backup(const std::string &filename);
 		std::vector<std::tuple<elev_button_type_t, int>> readBackup();
-		void writeBackup(OrderList *orders);
+		void writeBackup(OrderList &orders);
 };
