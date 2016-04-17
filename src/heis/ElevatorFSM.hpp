@@ -31,6 +31,7 @@ class ElevatorFSM {
     	void doorTimerTimedOut();
 		bool shouldStop(int floor);
         void interpretMessage(const address_v4 &messageIP, message_t messageType, int floor);
+
     public:
     	ElevatorFSM(OrderList* orderList_p, ElevatorMap* elevatorMap_p, Timer* motorTimer_p, Communication* communication_p);
 		void buttonPressed(elev_button_type_t buttonType, int floor);

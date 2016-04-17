@@ -7,10 +7,12 @@
 #include "ElevatorMap.hpp"
 
 using boost::asio::ip::address_v4;
+
 class OrderList {
     private:
         std::list<Button> orders;
         std::list<Button>::iterator find(elev_button_type_t type, int floor);
+
     public:
     	bool checkOrder(elev_button_type_t type, int floor);
         void add(elev_button_type_t type, int floor);

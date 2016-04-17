@@ -15,21 +15,21 @@ bool killed = false;
 void isModified(){
   char buffer[BUF_LEN];
   changed = false;
-  int fd = inotify_init();
+  int filedescriptor = inotify_init();
 
-  if ( fd < 0 ) {
+  if ( filedescriptor < 0 ) {
     return;
   }
 
-  int wd = inotify_add_watch( fd, "backup.txt", IN_MODIFY);
-  int length = read( fd, buffer, BUF_LEN );  
+  int watchdescriptor = inotify_add_watch( filedescriptor, "backup.txt", IN_MODIFY);
+  int length = read( filedescriptor, buffer, BUF_LEN );  
   if ( length < 0 ) {
     return;
   }
   changed = true;
-  inotify_rm_watch( fd, wd );
+  inotify_rm_watch( filedescriptor, watchdescriptor );
 
-  close( fd );
+  close( filedescriptor );
   return;
 }
 
@@ -40,9 +40,11 @@ int main(int argc, char* argv[]){
     t.timed_join(boost::posix_time::seconds(TIMEOUT));
     if(kill(pid,0) != 0) killed = true;
   } while(changed == true && killed == false);
-  if(kill(pid,0) == 0) kill(pid,1);
+  if(kill(pid,0) == 0){ 
+    kill(pid,1);
+    }
   t.timed_join(boost::posix_time::seconds(0));
-  std::cerr << "Timed out, restarting - Check if out of bounds!" << std::endl;
+  std::cerr << "Timed out, restarting" << std::endl;
   int spawned = execl("./bin/heis", "heis", (char*)0);
   if(spawned == -1)
   {

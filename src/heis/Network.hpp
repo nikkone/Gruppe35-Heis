@@ -29,8 +29,8 @@ class Network {
     void udpListener();
 
   public:
+    Network(int port, const address_v4 &myIP);
     const address_v4 getMyIP() const;
-  	Network(int port, const address_v4 &myIP);
   	void send(const std::string &msg);
     std::vector<std::pair<address_v4, std::string>> get_messages();
     std::vector<std::pair<address_v4, bool>> get_listofPeers();

@@ -10,6 +10,7 @@ using boost::asio::ip::address_v4;
 class ElevatorMap {
 	private:
 		std::map<address_v4,  Elevator> elevatorMap;
+		
 	public:
 	void addElevator(const address_v4 &ip, int location);
 	void addElevator(const address_v4 &ip);

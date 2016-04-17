@@ -119,16 +119,16 @@ void Network::heartbeat(){
 }
 
 void Network::sendtoSocket(tcpSocket_ptr clientSock, const std::string &msg){
-    char * data = new char[msg.size() + 1];
-    std::copy(msg.begin(), msg.end(), data);
-    data[msg.size()] = '\0';
+    char * msgData = new char[msg.size() + 1];
+    std::copy(msg.begin(), msg.end(), msgData);
+    msgData[msg.size()] = '\0';
     try{
-        clientSock->write_some(buffer(data, strlen(data)));
+        clientSock->write_some(buffer(msgData, strlen(msgData)));
     }
     catch(...){
         std::cerr << "Could not connect to socket in sendtoSocket" << std::endl;
     }
-    delete[] data;
+    delete[] msgData;
 }
 
 void Network::tcpMessageBroadcaster(){
@@ -233,8 +233,8 @@ std::vector< std::pair< address_v4, bool > >  Network::get_listofPeers(){
 
 void Network::udpBroadcaster(){
     io_service io_service;
-    udpSocket_ptr socket(new udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
-    socket->set_option(socket_base::broadcast(true));
+    udpSocket_ptr broadcastSocket(new udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
+    broadcastSocket->set_option(socket_base::broadcast(true));
     udp::endpoint broadcast_endpoint(address_v4::broadcast(), 8888);
     std::string ip_string = myIP.to_string();
     char * data = new char[ip_string.size() + 1];
@@ -244,18 +244,18 @@ void Network::udpBroadcaster(){
     while(true){
         if(socketClosed){
             try{
-	            socket.reset();
-			    socket = udpSocket_ptr (new udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
-			    socket->set_option(socket_base::broadcast(true));
+	            broadcastSocket.reset();
+			    broadcastSocket = udpSocket_ptr (new udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
+			    broadcastSocket->set_option(socket_base::broadcast(true));
                 socketClosed = false;
             } catch(...){ 
                 std::cerr << "Could not open socket in udpBroadcaster" << std::endl;
             }
         }
         try{
-            socket->send_to(buffer(data, strlen(data)), broadcast_endpoint);
+            broadcastSocket->send_to(buffer(data, strlen(data)), broadcast_endpoint);
         } catch(...){
-            socket->close();
+            broadcastSocket->close();
             socketClosed = true;
             std::cerr << "Could not connect to socket in udpBroadcaster" << std::endl;
         }
