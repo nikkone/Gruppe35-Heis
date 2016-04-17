@@ -41,7 +41,7 @@ int main(int argc, char* argv[]){
     if(kill(pid,0) != 0) killed = true;
   } while(changed == true && killed == false);
   if(kill(pid,0) == 0){ 
-    kill(pid,1);
+    kill(pid,9);
     }
   t.timed_join(boost::posix_time::seconds(0));
   std::cerr << "Timed out, restarting" << std::endl;

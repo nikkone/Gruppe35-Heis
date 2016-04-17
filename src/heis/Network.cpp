@@ -49,6 +49,9 @@ const address_v4 Network::getMyIP() const{
 }
 
 void Network::connectionHandler(){
+    tcp::acceptor acceptor(service, tcp::endpoint(tcp::v4(), port));
+
+    /*
     tcp::acceptor acceptor(service);
     tcp::endpoint endpoint(tcp::v4(), port);
     acceptor.open(endpoint.protocol());
@@ -57,17 +60,17 @@ void Network::connectionHandler(){
         acceptor.bind(endpoint);
         acceptor.listen();
     }catch(...){
-        std::cerr << "Socket allready in us, check if multiple instances of \"heis\" is running!" << std::endl;
-        kill(getppid(),1);
-        kill(getpid(),1);
-    }
+        std::cerr << "Socket allready in use, check if multiple instances of \"heis\" is running!" << std::endl;
+        kill(getppid(),9);
+        kill(getpid(),9);
+    } */
     while(true)
     {
         tcpSocket_ptr clientSock(new tcp::socket(service));
         acceptor.accept(*clientSock);
         clientList_mtx.lock();
         for(auto& sock : *clientList)
-        {
+        {  
             try{
                 if(std::get<2>(sock) == clientSock->remote_endpoint().address().to_v4()){
                     return; 
@@ -273,6 +276,7 @@ void Network::udpListener(){
         if (socketClosed == true){
             try{
             	recieveSocket.reset();
+                std::cout << "udp sock reset" << std::endl;
 			    recieveSocket = udpSocket_ptr (new udp::socket(io_service, udp::endpoint(udp::v4(), 8888)));
                 socketClosed = false;
             }catch(...){
@@ -305,7 +309,7 @@ void Network::udpListener(){
                 catch(...){
                     recieveSocket->close();
                     socketClosed = true;
-                    std::cerr << "Could not connect to socket in udpListener" << std::endl;
+                    std::cerr << "Could not connect to tcp socket in udpListener" << std::endl;
                 }
                 connectedPeers_mtx.unlock();
             }
