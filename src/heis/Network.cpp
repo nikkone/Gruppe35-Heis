@@ -276,7 +276,6 @@ void Network::udpListener(){
         if (socketClosed == true){
             try{
             	recieveSocket.reset();
-                std::cout << "udp sock reset" << std::endl;
 			    recieveSocket = udpSocket_ptr (new udp::socket(io_service, udp::endpoint(udp::v4(), 8888)));
                 socketClosed = false;
             }catch(...){
