@@ -3,6 +3,8 @@
 #include <queue>
 #include <string>
 #include <cstdlib>
+#include <signal.h>
+#include <unistd.h>
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
@@ -47,7 +49,18 @@ const address_v4 Network::getMyIP() const{
 }
 
 void Network::connectionHandler(){
-    tcp::acceptor acceptor(service, tcp::endpoint(tcp::v4(), port));
+    tcp::acceptor acceptor(service);
+    tcp::endpoint endpoint(tcp::v4(), port);
+    acceptor.open(endpoint.protocol());
+    acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+    try{
+        acceptor.bind(endpoint);
+        acceptor.listen();
+    }catch(...){
+        std::cerr << "Socket allready in us, check if multiple instances of \"heis\" is running!" << std::endl;
+        kill(getppid(),9);
+        kill(getpid(),9);
+    }
     while(true)
     {
         tcpSocket_ptr clientSock(new tcp::socket(service));

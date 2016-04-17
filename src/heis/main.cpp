@@ -19,9 +19,7 @@ int main() {
 
     int pid = fork();
     if(pid == 0){
-        std::string parentpid = std::to_string(getppid());
-        const char* parentpid_c = parentpid.c_str();
-        int spawned = execl("./bin/watchdog", "watchdog", parentpid_c, (char*)NULL);
+        int spawned = execl("./bin/watchdog", "watchdog", "&", (char*)NULL);
         if(spawned == -1)
         {
           std::cerr << "Watchdog failed to start" << std::endl;
