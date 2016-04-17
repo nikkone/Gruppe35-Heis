@@ -2,7 +2,8 @@
 #include <unistd.h>
 #include <sys/inotify.h>
 #include <boost/thread.hpp>
-#include "elev.h"
+#include <signal.h>
+//#include "elev.h"
 
 #define EVENT_SIZE  ( sizeof (struct inotify_event) )
 #define BUF_LEN     ( 1024 * ( EVENT_SIZE + 16 ) )
@@ -10,6 +11,7 @@
 const int TIMEOUT = 2;
 
 bool changed = false;
+bool killed = false;
 
 void isModified(){
   char buffer[BUF_LEN];
@@ -32,23 +34,17 @@ void isModified(){
   return;
 }
 
-int main(){
-  system("gnome-terminal -e \"./bin/heis\" &");
-  while(true) {
-    do{
-      boost::thread t(&isModified);
-      t.timed_join(boost::posix_time::seconds(TIMEOUT));
-    } while(changed == true);
-    elev_init();
-    elev_set_motor_direction(DIRN_STOP);
-    try {
-      system("killall -9 heis &");
-    } catch(...){
-      std::cerr << "No process found" << std::endl;
-    }
-    system("gnome-terminal -e \"./bin/heis\" &");
-    std::cerr << "Timed out, restarting" << std::endl;
-    sleep(2);
-  }
-  return 0;
+int main(int argc, char* argv[]){
+  int pid = atoi(argv[1]);
+  do{
+    boost::thread t(&isModified);
+    t.timed_join(boost::posix_time::seconds(TIMEOUT));
+    if(kill(pid,0) != 0) killed = true;
+  } while(changed == true && killed == false);
+  //elev_init();
+  //elev_set_motor_direction(DIRN_STOP);
+  if(kill(pid,0) == 0) kill(pid,1);
+  execl("./bin/heis", "heis", (char*)0);
+  std::cerr << "Timed out, restarting" << std::endl;
+  return 0; 
 }

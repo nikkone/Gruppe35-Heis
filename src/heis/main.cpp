@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <iostream>
+#include <sys/types.h>
 #include <boost/asio/ip/address_v4.hpp>
 
 #include "elev.h"
@@ -15,6 +16,18 @@ using boost::asio::ip::address_v4;
 const int backupInterval = 1; //seconds
 
 int main() {
+
+    int pid = fork();
+    if(pid == 0){
+        std::string parentpid = std::to_string(getppid());
+        const char* parentpid_c = parentpid.c_str();
+        int spawned = execl("./bin/watchdog", "watchdog", parentpid_c, (char*)NULL);
+        if(spawned == -1)
+        {
+          std::cerr << "Watchdog failed to start" << std::endl;
+        }
+    }
+
     OrderList orders;
     ElevatorMap elevators;
     Timer motorTimer;
