@@ -18,7 +18,7 @@ typedef boost::shared_ptr< std::queue< std::string > > messageQueue_ptr;
 
 const int bufSize = 128; 
 const double heartbeatInterval = 3; // Seconds
-const int  udpBroadcastInterval = 1; // Seconds
+const int  udpBroadcastInterval = 2; // Seconds
 
 io_service service;
 boost::mutex OutMessageQueue_mtx;
@@ -276,7 +276,7 @@ void Network::udpListener(){
 			    recieveSocket = udpSocket_ptr (new udp::socket(io_service, udp::endpoint(udp::v4(), 8888)));
                 socketClosed = false;
             }catch(...){
-                std::cerr << "Could not open socket in udpBroadcaster" << std::endl;
+                std::cerr << "Could not open socket in udpBroadcaster - check network connection" << std::endl;
             }
         }
         char data[bufSize] ={0};
