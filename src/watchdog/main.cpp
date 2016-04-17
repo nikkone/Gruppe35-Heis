@@ -1,9 +1,8 @@
 #include <ostream>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/inotify.h>
 #include <boost/thread.hpp>
-#include <signal.h>
-#include "elev.h"
 
 #define EVENT_SIZE  ( sizeof (struct inotify_event) )
 #define BUF_LEN     ( 1024 * ( EVENT_SIZE + 16 ) )
@@ -41,11 +40,9 @@ int main(int argc, char* argv[]){
     t.timed_join(boost::posix_time::seconds(TIMEOUT));
     if(kill(pid,0) != 0) killed = true;
   } while(changed == true && killed == false);
-  elev_init();
-  elev_set_motor_direction(DIRN_STOP);
   if(kill(pid,0) == 0) kill(pid,1);
   t.timed_join(boost::posix_time::seconds(0));
-  std::cerr << "Timed out, restarting" << std::endl;
+  std::cerr << "Timed out, restarting - Check if out of bounds!" << std::endl;
   int spawned = execl("./bin/heis", "heis", (char*)0);
   if(spawned == -1)
   {

@@ -1,8 +1,9 @@
 #pragma once
-#include "Elevator.hpp"
 #include <map>
 #include <ostream>
 #include <boost/asio/ip/address_v4.hpp>
+
+#include "Elevator.hpp"
 
 using boost::asio::ip::address_v4;
 

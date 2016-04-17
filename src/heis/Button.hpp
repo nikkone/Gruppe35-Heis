@@ -1,6 +1,7 @@
 #pragma once
 #include <ostream>
 #include "elev.h"
+
 class Button {
     private:
         elev_button_type_t buttonType;

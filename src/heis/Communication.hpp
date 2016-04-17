@@ -1,10 +1,11 @@
 #pragma once
-#include <string>
 #include <tuple>
+#include <string>
 #include <vector>
 #include <boost/asio/ip/address_v4.hpp>
-#include "Network.hpp"
+
 #include "elev.h"
+#include "Network.hpp"
 #include "ElevatorMap.hpp"
 
 using boost::asio::ip::address_v4;

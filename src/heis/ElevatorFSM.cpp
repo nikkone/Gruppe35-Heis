@@ -1,5 +1,6 @@
-#include "ElevatorFSM.hpp"
 #include <iostream>
+
+#include "ElevatorFSM.hpp"
 
 enum toggle {
     OFF, ON

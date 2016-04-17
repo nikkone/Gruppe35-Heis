@@ -1,10 +1,10 @@
-#include "Communication.hpp"
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <sstream>
 #include <ostream>
 #include <utility> 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+#include "Communication.hpp"
 
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;

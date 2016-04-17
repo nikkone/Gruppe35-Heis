@@ -1,9 +1,10 @@
 #pragma once
 #include <list>
 #include <boost/asio/ip/address_v4.hpp>
+
+#include "elev.h"
 #include "Button.hpp"
 #include "ElevatorMap.hpp"
-#include "elev.h"
 
 using boost::asio::ip::address_v4;
 class OrderList {

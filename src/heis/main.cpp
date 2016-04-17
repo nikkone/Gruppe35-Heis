@@ -5,11 +5,11 @@
 
 #include "elev.h"
 #include "Timer.hpp"
+#include "Backup.hpp"
 #include "OrderList.hpp"
+#include "ElevatorMap.hpp"
 #include "ElevatorFSM.hpp"
 #include "Communication.hpp"
-#include "ElevatorMap.hpp"
-#include "Backup.hpp"
 
 using boost::asio::ip::address_v4;
 

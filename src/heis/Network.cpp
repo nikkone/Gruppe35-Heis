@@ -1,10 +1,10 @@
-#include <iostream>
 #include <list>
 #include <queue>
 #include <string>
 #include <cstdlib>
 #include <signal.h>
 #include <unistd.h>
+#include <iostream>
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
@@ -311,6 +311,6 @@ void Network::udpListener(){
             }
             clientList_mtx.unlock();
         }
+        boost::this_thread::sleep(boost::posix_time::millisec(100));
     }
-    boost::this_thread::sleep(boost::posix_time::millisec(100));
 }

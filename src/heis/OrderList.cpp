@@ -1,5 +1,7 @@
-#include "OrderList.hpp"
 #include <ostream>
+
+#include "OrderList.hpp"
+
 void OrderList::add(elev_button_type_t type, int floor) {
     if(find(type, floor)==orders.end()) {
         orders.push_back(Button(type,floor));

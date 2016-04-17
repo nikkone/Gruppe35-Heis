@@ -1,5 +1,6 @@
-#include "ElevatorMap.hpp"
 #include <vector>
+
+#include "ElevatorMap.hpp"
 
 void ElevatorMap::addElevator(const address_v4 &ip, int location) {
 	if(elevatorMap.find(ip) == elevatorMap.end()) {
