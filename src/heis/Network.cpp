@@ -58,8 +58,8 @@ void Network::connectionHandler(){
         acceptor.listen();
     }catch(...){
         std::cerr << "Socket allready in us, check if multiple instances of \"heis\" is running!" << std::endl;
-        kill(getppid(),9);
-        kill(getpid(),9);
+        kill(getppid(),1);
+        kill(getpid(),1);
     }
     while(true)
     {

@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
   } while(changed == true && killed == false);
   elev_init();
   elev_set_motor_direction(DIRN_STOP);
-  if(kill(pid,0) == 0) kill(pid,9);
+  if(kill(pid,0) == 0) kill(pid,1);
   t.timed_join(boost::posix_time::seconds(0));
   std::cerr << "Timed out, restarting" << std::endl;
   int spawned = execl("./bin/heis", "heis", (char*)0);
