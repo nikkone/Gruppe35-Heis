@@ -15,6 +15,7 @@ typedef enum msg_types {
 } message_t;
 
 class Communication {
+	
 	private:
 		Network network;
 

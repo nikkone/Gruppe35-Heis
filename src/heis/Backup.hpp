@@ -7,6 +7,7 @@
 #include "OrderList.hpp"
 
 class Backup {
+	
 	private:
 		std::string backupFile;
 		void writeStringToFile(const std::string &str);

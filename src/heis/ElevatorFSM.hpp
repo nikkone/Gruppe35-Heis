@@ -16,6 +16,7 @@ typedef enum state {
 const int N_BUTTONS = 3;
 
 class ElevatorFSM {
+    
     private:
     	OrderList* orders;
     	Timer doorTimer;

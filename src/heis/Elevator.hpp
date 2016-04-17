@@ -2,6 +2,7 @@
 #include <ostream>
 
 class Elevator {
+	
     public:
         int currentLocation;
         int destination;
